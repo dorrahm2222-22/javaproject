@@ -10,7 +10,7 @@ public class App {
 
             Statement stmt=con.createStatement();
 
-            ResultSet rs=stmt.executeQuery("SELECT * FROM student;");
+            ResultSet rs=stmt.executeQuery("SELECT * FROM ?;");
 
             while(rs.next()){
                 System.out.println();
