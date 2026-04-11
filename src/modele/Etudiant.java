@@ -17,12 +17,13 @@ public class Etudiant extends Utilisateur {
     }
 
     public Etudiant(int id, String login, String motDePasse, String email,
-                    String nom, String prenom, String niveau) {
+                    String nom, String prenom, String niveau,String idEtudiant) {
         super(id,login, motDePasse, email, "Etudiant", true);
         this.nom = nom;
         this.prenom = prenom;
         this.niveau = niveau;
         this.status = "Actif";
+        this.idEtudiant = idEtudiant;
     }
 
 
@@ -65,6 +66,12 @@ public class Etudiant extends Utilisateur {
         this.dateNaissance = dateNaissance;
     }
 
+    public String getIdEtudiant() {
+        return idEtudiant;
+    }
+    public void setIdEtudiant(String idEtudiant) {
+        this.idEtudiant = idEtudiant;
+    }
 
     @Override
     public String toString() {
