@@ -51,19 +51,55 @@ public class EnseignantDAO {
         return liste;
     }
  
-    public Enseignant trouverParId(int id) {
+    public Enseignant getEnseignantId(int id) {
         String sql = "SELECT * FROM enseignant WHERE id = ?";
         try (PreparedStatement ps = connexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
         } catch (SQLException e) {
-            System.err.println("Erreur trouverParId enseignant: " + e.getMessage());
+            System.err.println("Erreur getEnseignantId enseignant: " + e.getMessage());
+        }
+        return null;
+    }
+    public Enseignant getEnseignantnom(String nom) {
+        String sql = "SELECT * FROM enseignant WHERE nom = ?";
+        try (PreparedStatement ps = connexion.prepareStatement(sql)) {
+            ps.setString(1, nom);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapRow(rs);
+        } catch (SQLException e) {
+            System.err.println("Erreur getEnseignantnom enseignant: " + e.getMessage());
+        }
+        return null;
+    }
+    public Enseignant getEnseignantmatiereId(int matiereId) {
+        String sql = "SELECT * FROM enseignant WHERE matiere_id = ?";
+        try (PreparedStatement ps = connexion.prepareStatement(sql)) {
+            ps.setInt(1, matiereId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapRow(rs);
+        } catch (SQLException e) {
+            System.err.println("Erreur getEnseignantmatiereId enseignant: " + e.getMessage());
         }
         return null;
     }
  
-    public boolean modifier(Enseignant enseignant) {
+ 
+    private Enseignant mapRow(ResultSet rs) throws SQLException {
+        Enseignant e = new Enseignant();
+        e.setId(rs.getInt("id"));
+        e.setLogin(rs.getString("login"));
+        e.setEmail(rs.getString("email"));
+        e.setNom(rs.getString("nom"));
+        e.setPrenom(rs.getString("prenom"));
+        e.setTelephone(rs.getString("telephone"));
+        e.setGrade(rs.getString("grade"));
+        e.setMatiereId(rs.getInt("matiere_id"));
+        e.setActif(rs.getBoolean("actif"));
+        return e;
+    }
+       public boolean modifier(Enseignant enseignant) {
         String sql = "UPDATE enseignant SET login=?, email=?, nom=?, prenom=?, " +
                      "telephone=?, grade=?, matiere_id=? WHERE id=?";
         try (PreparedStatement ps = connexion.prepareStatement(sql)) {
@@ -91,19 +127,5 @@ public class EnseignantDAO {
             System.err.println("Erreur supprimer enseignant: " + e.getMessage());
         }
         return false;
-    }
- 
-    private Enseignant mapRow(ResultSet rs) throws SQLException {
-        Enseignant e = new Enseignant();
-        e.setId(rs.getInt("id"));
-        e.setLogin(rs.getString("login"));
-        e.setEmail(rs.getString("email"));
-        e.setNom(rs.getString("nom"));
-        e.setPrenom(rs.getString("prenom"));
-        e.setTelephone(rs.getString("telephone"));
-        e.setGrade(rs.getString("grade"));
-        e.setMatiereId(rs.getInt("matiere_id"));
-        e.setActif(rs.getBoolean("actif"));
-        return e;
     }
 }
