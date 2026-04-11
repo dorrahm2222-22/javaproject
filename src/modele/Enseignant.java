@@ -62,7 +62,7 @@ public class Enseignant extends Utilisateur {
 
     @Override
     public String toString() {
-        return "Enseignant [nom=" + nom + ", prenom=" + prenom + ", grade=" + grade + ", telephone=" + telephone
+        return "Enseignant [nom enseignant=" + nom + ", prenom=" + prenom + ", grade=" + grade + ", telephone=" + telephone
                 + ", matiereId=" + matiereId + "]";
     }
 
