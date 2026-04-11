@@ -60,6 +60,12 @@ public class Enseignant extends Utilisateur {
         this.matiereId = matiereId;
     }
 
+    @Override
+    public String toString() {
+        return "Enseignant [nom=" + nom + ", prenom=" + prenom + ", grade=" + grade + ", telephone=" + telephone
+                + ", matiereId=" + matiereId + "]";
+    }
+
 
     
     
