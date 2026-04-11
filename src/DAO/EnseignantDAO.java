@@ -6,7 +6,7 @@ import modele.Enseignant;
 
 public class EnseignantDAO {
  
-    private Connection connexion;
+    private final Connection connexion;
  
     public EnseignantDAO(Connection connexion) {
         this.connexion = connexion;
