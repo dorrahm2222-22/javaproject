@@ -1,0 +1,5 @@
+# Ignore Visual Studio Code workspace settings
+.vscode/settings.json
+
+# Ignore THE MAIN Java file
+app.java
