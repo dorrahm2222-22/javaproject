@@ -16,7 +16,7 @@ public class EtudiantDAO {
 
     public List<Etudiant> getAllEtudiants() throws SQLException {
         List<Etudiant> etudiants = new ArrayList<>();
-        String sql = "SELECT * FROM etudiants ORDER BY nom, prenom";
+        String sql = "SELECT * FROM etudiant ORDER BY nom, prenom";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -30,13 +30,22 @@ public class EtudiantDAO {
     private Etudiant mapRow(ResultSet rs) throws SQLException {
         Etudiant etudiant = new Etudiant();
         etudiant.setId(rs.getInt("id"));
+        etudiant.setLogin(rs.getString("login"));
+        etudiant.setMotDePasse(rs.getString("motdepasse"));
+        etudiant.setEmail(rs.getString("email"));
         etudiant.setNom(rs.getString("nom"));
         etudiant.setPrenom(rs.getString("prenom"));
+        etudiant.setStatus(rs.getString("status"));
+        etudiant.setIdEtudiant(rs.getString("idEtudiant"));
+        etudiant.setActif(rs.getBoolean("actif"));
+        if (rs.getDate("dateNaissance") != null) {
+            etudiant.setDateNaissance(new java.util.Date(rs.getDate("dateNaissance").getTime()));
+        }
         return etudiant;
     }
 
     public int ajouter(Etudiant etudiant) throws SQLException {
-        String sql = "Insert into etudiants (login, motdepasse, email, nom, prenom , "
+        String sql = "Insert into etudiant (login, motdepasse, email, nom, prenom , "
             + "dateNaissance, niveau, status, idEtudiant) "
             + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -145,6 +154,21 @@ public class EtudiantDAO {
             System.err.println("Erreur getEtudiantsByNiveau: " + e.getMessage());
         }
         return etudiants;
+    }
+
+    public Etudiant getEtudiantByLogin(String login) {
+        String sql = "SELECT * FROM etudiant WHERE login = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, login);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur getEtudiantByLogin: " + e.getMessage());
+        }
+        return null;
     }
 
 }

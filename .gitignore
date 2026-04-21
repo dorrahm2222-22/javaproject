@@ -2,4 +2,4 @@
 .vscode/settings.json
 
 # Ignore THE MAIN Java file
-App.java
+app.java
