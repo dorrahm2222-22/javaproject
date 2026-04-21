@@ -31,3 +31,5 @@ build/
 # ==============================
 *.jar
 lib/
+
+DBConnection.java
