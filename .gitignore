@@ -1,5 +1,33 @@
-# Ignore Visual Studio Code workspace settings
-.vscode/settings.json
+# ==============================
+# Compiled Java classes
+# ==============================
+*.class
 
-# Ignore THE MAIN Java file
-app.java
+# ==============================
+# Database credentials (IMPORTANT - never share these!)
+# ==============================
+DBConnection.java
+
+# ==============================
+# VS Code settings (personal, not shared)
+# ==============================
+.vscode/
+
+# ==============================
+# OS junk files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Build output folders
+# ==============================
+bin/
+out/
+build/
+
+# ==============================
+# JAR files (libraries)
+# ==============================
+*.jar
+lib/
