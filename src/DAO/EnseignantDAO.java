@@ -3,19 +3,20 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import modele.Enseignant;
+import util.DBConnection;
 
 public class EnseignantDAO {
  
-    private final Connection connexion;
+    private final Connection connection;
  
-    public EnseignantDAO(Connection connexion) {
-        this.connexion = connexion;
+    public EnseignantDAO(Connection connection) throws SQLException {
+        this.connection = DBConnection.getConnection();
     }
  
     public int ajouter(Enseignant enseignant) {
         String sql = "INSERT INTO enseignant (login, mot_de_passe, email, nom, prenom, " +
                      "telephone, grade, matiere_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = connexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, enseignant.getLogin());
             ps.setString(2, enseignant.getMotDePasse());
             ps.setString(3, enseignant.getEmail());
@@ -40,7 +41,7 @@ public class EnseignantDAO {
         List<Enseignant> liste = new ArrayList<>();
         String sql = "SELECT e.*, m.nom AS matiere_nom FROM enseignant e " +
                      "LEFT JOIN matiere m ON e.matiere_id = m.id ORDER BY e.nom";
-        try (Statement stmt = connexion.createStatement();
+        try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 liste.add(mapRow(rs));
@@ -50,10 +51,21 @@ public class EnseignantDAO {
         }
         return liste;
     }
- 
+    public Enseignant getEnseignantByLogin(String login) {
+    String sql = "SELECT * FROM enseignant WHERE login = ?";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        ps.setString(1, login);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return mapRow(rs);
+        }
+    } catch (SQLException e) {
+        System.err.println("Erreur getEnseignantByLogin: " + e.getMessage());
+    }
+    return null;
+}
     public Enseignant getEnseignantId(int id) {
         String sql = "SELECT * FROM enseignant WHERE id = ?";
-        try (PreparedStatement ps = connexion.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
@@ -64,7 +76,7 @@ public class EnseignantDAO {
     }
     public Enseignant getEnseignantnom(String nom) {
         String sql = "SELECT * FROM enseignant WHERE nom = ?";
-        try (PreparedStatement ps = connexion.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, nom);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
@@ -75,7 +87,7 @@ public class EnseignantDAO {
     }
     public Enseignant getEnseignantmatiereId(int matiereId) {
         String sql = "SELECT * FROM enseignant WHERE matiere_id = ?";
-        try (PreparedStatement ps = connexion.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, matiereId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
@@ -87,7 +99,8 @@ public class EnseignantDAO {
  
  
     private Enseignant mapRow(ResultSet rs) throws SQLException {
-        Enseignant e = new Enseignant();
+        Enseignant e = new Enseignant(); 
+        e.setMotDePasse(rs.getString("mot_de_passe"));
         e.setId(rs.getInt("id"));
         e.setLogin(rs.getString("login"));
         e.setEmail(rs.getString("email"));
@@ -102,7 +115,7 @@ public class EnseignantDAO {
        public boolean modifier(Enseignant enseignant) {
         String sql = "UPDATE enseignant SET login=?, email=?, nom=?, prenom=?, " +
                      "telephone=?, grade=?, matiere_id=? WHERE id=?";
-        try (PreparedStatement ps = connexion.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, enseignant.getLogin());
             ps.setString(2, enseignant.getEmail());
             ps.setString(3, enseignant.getNom());
@@ -120,7 +133,7 @@ public class EnseignantDAO {
  
     public boolean supprimer(int id) {
         String sql = "DELETE FROM enseignant WHERE id = ?";
-        try (PreparedStatement ps = connexion.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {

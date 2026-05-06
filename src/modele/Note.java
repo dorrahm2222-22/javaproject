@@ -8,16 +8,16 @@ public class Note {
     private int idMatiere;
     private double note;
     private String typeEvaluation;
-    private Date date;
+    private Date date_evaluation;
     
     public Note() {}
-    public Note(int id, int idEtudiant, int idMatiere, double note, String typeEvaluation, Date date) {
+    public Note(int id, int idEtudiant, int idMatiere, double note, String typeEvaluation, Date date_evaluation) {
         this.id = id;
         this.idEtudiant = idEtudiant;
         this.idMatiere = idMatiere;
         this.note = note;
         this.typeEvaluation = typeEvaluation;
-        this.date = date;
+        this.date_evaluation = date_evaluation;
     }
 
     public int getIdMatiere() {
@@ -44,11 +44,11 @@ public class Note {
     }
 
 
-    public Date getDate() {
-        return date;
+    public Date getDate_evaluation() {
+        return date_evaluation;
     }
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDate_evaluation(Date date_evaluation) {
+        this.date_evaluation = date_evaluation;
     }
 
 

@@ -3,15 +3,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import modele.Etudiant;
-
-
+import util.DBConnection;
 
 
 public class EtudiantDAO {
     private final Connection connection;
-
-    public EtudiantDAO(Connection connection) {
-        this.connection = connection;
+ 
+    public EtudiantDAO(Connection connection) throws SQLException {
+        this.connection = DBConnection.getConnection();
     }
 
     public List<Etudiant> getAllEtudiants() throws SQLException {
