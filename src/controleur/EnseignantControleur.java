@@ -16,34 +16,23 @@ public class EnseignantControleur {
         this.matiereDAO = new MatiereDAO(connection);
     }
 
-    // =====================
-    // AJOUTER
-    // =====================
-    public boolean ajouterEnseignant(String login, String motDePasse, String email,
-                                      String nom, String prenom, String grade,
-                                      String telephone, int matiereId) throws SQLException {
+    public boolean ajouterEnseignant(String login, String motDePasse, String email, String nom, String prenom, String grade, String telephone, int matiereId) throws SQLException {
 
-        // 1. Check if login already exists
+
         if (enseignantDAO.getEnseignantByLogin(login) != null) {
             System.out.println("Erreur: ce login existe déjà.");
             return false;
         }
-
-        // 2. Check if matiere exists
         if (matiereDAO.getMatiereById(matiereId) == null) {
             System.out.println("Erreur: matière introuvable.");
             return false;
         }
-
-        // 3. Basic validation
         if (login == null || login.isEmpty() ||
             motDePasse == null || motDePasse.isEmpty() ||
             nom == null || nom.isEmpty()) {
             System.out.println("Erreur: login, mot de passe et nom sont obligatoires.");
             return false;
         }
-
-        // 4. Build and save
         Enseignant enseignant = new Enseignant();
         enseignant.setLogin(login);
         enseignant.setMotDePasse(motDePasse);
@@ -63,21 +52,15 @@ public class EnseignantControleur {
         return false;
     }
 
-    // =====================
-    // MODIFIER
-    // =====================
-    public boolean modifierEnseignant(int id, String login, String email,
-                                       String nom, String prenom, String grade,
-                                       String telephone, int matiereId) throws SQLException {
+    public boolean modifierEnseignant(int id, String login, String email,  String nom, String prenom, String grade,  String telephone, int matiereId) throws SQLException {
 
-        // 1. Check enseignant exists
-        Enseignant enseignant = enseignantDAO.getEnseignantId(id);
+        Enseignant enseignant = enseignantDAO.getEnseignantById(id);
         if (enseignant == null) {
             System.out.println("Erreur: enseignant introuvable.");
             return false;
         }
 
-        // 2. Check matiere exists
+
         if (matiereDAO.getMatiereById(matiereId) == null) {
             System.out.println("Erreur: matière introuvable.");
             return false;
@@ -98,11 +81,8 @@ public class EnseignantControleur {
         return result;
     }
 
-    // =====================
-    // SUPPRIMER
-    // =====================
     public boolean supprimerEnseignant(int id) throws SQLException {
-        Enseignant enseignant = enseignantDAO.getEnseignantId(id);
+        Enseignant enseignant = enseignantDAO.getEnseignantById(id);
         if (enseignant == null) {
             System.out.println("Erreur: enseignant introuvable.");
             return false;
@@ -113,9 +93,6 @@ public class EnseignantControleur {
         return result;
     }
 
-    // =====================
-    // RECHERCHE & AFFICHAGE
-    // =====================
     public List<Enseignant> getAllEnseignants() throws SQLException {
         List<Enseignant> list = enseignantDAO.listerTous();
         if (list.isEmpty()) System.out.println("Aucun enseignant trouvé.");

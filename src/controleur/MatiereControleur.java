@@ -13,19 +13,13 @@ public class MatiereControleur {
         this.matiereDAO = new MatiereDAO(connection);
     }
 
-    // =====================
-    // AJOUTER
-    // =====================
-    public boolean ajouterMatiere(String nom, int coefficient,
-                                   int volumeHoraire, String semestre) {
+  
+    public boolean ajouterMatiere(String nom, int coefficient,int volumeHoraire, String semestre) {
 
-        // 1. Check if matiere already exists
         if (matiereDAO.getMatiereByNom(nom) != null) {
             System.out.println("Erreur: cette matière existe déjà.");
             return false;
         }
-
-        // 2. Basic validation
         if (nom == null || nom.isEmpty()) {
             System.out.println("Erreur: le nom est obligatoire.");
             return false;
@@ -42,8 +36,6 @@ public class MatiereControleur {
             System.out.println("Erreur: le semestre est obligatoire.");
             return false;
         }
-
-        // 3. Build and save
         Matiere matiere = new Matiere();
         matiere.setNom(nom);
         matiere.setCoefficient(coefficient);
@@ -58,20 +50,17 @@ public class MatiereControleur {
         return false;
     }
 
-    // =====================
-    // MODIFIER
-    // =====================
-    public boolean modifierMatiere(int id, String nom, int coefficient,
-                                    int volumeHoraire, String semestre) throws SQLException {
 
-        // 1. Check matiere exists
+    public boolean modifierMatiere(int id, String nom, int coefficient, int volumeHoraire, String semestre) throws SQLException {
+
+
         Matiere matiere = matiereDAO.getMatiereById(id);
         if (matiere == null) {
             System.out.println("Erreur: matière introuvable.");
             return false;
         }
 
-        // 2. Validate
+
         if (coefficient <= 0) {
             System.out.println("Erreur: le coefficient doit être supérieur à 0.");
             return false;
@@ -81,7 +70,6 @@ public class MatiereControleur {
             return false;
         }
 
-        // 3. Update fields
         matiere.setNom(nom);
         matiere.setCoefficient(coefficient);
         matiere.setVolumeHoraire(volumeHoraire);
@@ -93,9 +81,7 @@ public class MatiereControleur {
         return result;
     }
 
-    // =====================
-    // SUPPRIMER
-    // =====================
+
     public boolean supprimerMatiere(int id) throws SQLException {
         Matiere matiere = matiereDAO.getMatiereById(id);
         if (matiere == null) {
@@ -108,9 +94,7 @@ public class MatiereControleur {
         return result;
     }
 
-    // =====================
-    // RECHERCHE & AFFICHAGE
-    // =====================
+   
     public List<Matiere> getAllMatieres() {
         List<Matiere> list = matiereDAO.getAllMatieres();
         if (list.isEmpty()) System.out.println("Aucune matière trouvée.");

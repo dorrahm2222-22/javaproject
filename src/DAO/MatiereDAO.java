@@ -18,14 +18,14 @@ public class MatiereDAO {
         m.setId(rs.getInt("id"));
         m.setNom(rs.getString("nom"));
         m.setCoefficient(rs.getInt("coefficient"));
-        m.setVolumeHoraire(rs.getInt("volumeHoraire"));
+        m.setVolumeHoraire(rs.getInt("volume_Horaire"));
         m.setSemestre(rs.getString("semestre"));
         return m;
     }
 
     public int ajouter(Matiere matiere) {
-        String sql = "INSERT INTO matiere (nom, coefficient, volumeHoraire, semestre) "
-                + "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO matiere ( nom, coefficient, volume_Horaire, semestre) "
+                + "VALUES ( ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, matiere.getNom());
             ps.setInt(2, matiere.getCoefficient());
@@ -81,7 +81,20 @@ public class MatiereDAO {
         return null;
     }
 
-    // Get all subjects for a specific semester
+    public List<Matiere> getMatieresByEnseignant(int matiereId) {
+        List<Matiere> matieres = new ArrayList<>();
+        String sql = "SELECT * FROM matiere WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, matiereId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) matieres.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur getMatieresByEnseignant: " + e.getMessage());
+        }
+        return matieres;
+    }
+
     public List<Matiere> getMatieresBySemestre(String semestre) {
         List<Matiere> matieres = new ArrayList<>();
         String sql = "SELECT * FROM matiere WHERE semestre = ?";
@@ -97,7 +110,7 @@ public class MatiereDAO {
     }
 
     public boolean modifier(Matiere matiere) {
-        String sql = "UPDATE matiere SET nom = ?, coefficient = ?, volumeHoraire = ?, "
+        String sql = "UPDATE matiere SET nom = ?, coefficient = ?, volume_Horaire = ?, "
                 + "semestre = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, matiere.getNom());

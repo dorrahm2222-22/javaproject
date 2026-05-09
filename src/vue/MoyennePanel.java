@@ -25,8 +25,8 @@ public class MoyennePanel extends JPanel {
     private final Color SUBTLE_COLOR = new Color(100, 116, 139);
     private final Color FIELD_BG     = new Color(51, 65, 85);
     private final Color DANGER       = new Color(248, 113, 113);
-    private final Color SUCCESS      = new Color(74, 222, 128);
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public MoyennePanel(Utilisateur user) {
         this.currentUser = user;
         try {
@@ -113,7 +113,7 @@ public class MoyennePanel extends JPanel {
     public void showForm(Moyenneg existing) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this),
             existing == null ? "Ajouter une moyenne" : "Modifier la moyenne", true);
-        dialog.setSize(380, 400);
+        dialog.setSize(380, 340);
         dialog.setLocationRelativeTo(this);
         dialog.getContentPane().setBackground(PANEL_COLOR);
         dialog.setLayout(new BorderLayout());
@@ -124,15 +124,19 @@ public class MoyennePanel extends JPanel {
 
         JTextField fIdEt  = formField(existing != null ? String.valueOf(existing.getIdEtudiant()) : "");
         JTextField fVal   = formField(existing != null ? String.valueOf(existing.getValeur()) : "");
-        JTextField fMen   = formField(existing != null ? existing.getMention() : "");
         JTextField fSem   = formField(existing != null ? existing.getSemestre() : "");
         JTextField fAnnee = formField(existing != null ? existing.getAnneeAcademique() : "");
 
-        form.add(formLabel("ID Étudiant"));       form.add(fIdEt);
-        form.add(formLabel("Valeur (0-20)"));     form.add(fVal);
-        form.add(formLabel("Mention"));           form.add(fMen);
-        form.add(formLabel("Semestre"));          form.add(fSem);
-        form.add(formLabel("Année Académique"));  form.add(fAnnee);
+        JLabel mention = formLabel("Mention calculée automatiquement selon la valeur");
+        form.add(formLabel("ID Étudiant"));       
+        form.add(fIdEt);
+        form.add(formLabel("Valeur (0-20)"));     
+        form.add(fVal);
+        form.add(mention);
+        form.add(formLabel("Semestre"));          
+        form.add(fSem);
+        form.add(formLabel("Année Académique"));  
+        form.add(fAnnee);
 
         JButton btnSave   = styledButton(existing == null ? "Ajouter" : "Modifier", ACCENT_COLOR, new Color(15,23,42));
         JButton btnCancel = styledButton("Annuler", FIELD_BG, TEXT_COLOR);
@@ -142,7 +146,6 @@ public class MoyennePanel extends JPanel {
             Moyenneg m = existing != null ? existing : new Moyenneg();
             try { m.setIdEtudiant(Integer.parseInt(fIdEt.getText().trim())); } catch (NumberFormatException ex) {}
             try { m.setValeur(Double.parseDouble(fVal.getText().trim())); } catch (NumberFormatException ex) {}
-            m.setMention(fMen.getText().trim());
             m.setSemestre(fSem.getText().trim());
             m.setAnneeAcademique(fAnnee.getText().trim());
             if (existing == null) moyenneDAO.ajouter(m);
@@ -194,6 +197,7 @@ public class MoyennePanel extends JPanel {
 
     private JTextField formField(String val) { JTextField f = new JTextField(val); styleField(f); return f; }
 
+    
     private void styleField(JTextField f) {
         f.setBackground(FIELD_BG); f.setForeground(TEXT_COLOR); f.setCaretColor(TEXT_COLOR);
         f.setFont(new Font("Segoe UI", Font.PLAIN, 13));

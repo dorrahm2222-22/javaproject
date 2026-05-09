@@ -70,7 +70,7 @@ public class ProfilPanel extends JPanel {
             card.add(Box.createVerticalStrut(12));
             card.add(infoRow("🎓 Niveau", et.getNiveau() != null ? et.getNiveau() : "-"));
             card.add(Box.createVerticalStrut(12));
-            card.add(infoRow("🆔 ID Étudiant", et.getIdEtudiant() != null ? et.getIdEtudiant() : "-"));
+            card.add(infoRow("🆔 ID Étudiant", String.valueOf(et.getIdEtudiant())));
         }
 
         return card;

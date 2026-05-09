@@ -7,8 +7,6 @@ public class Etudiant extends Utilisateur {
     private String prenom;
     private Date dateNaissance;
     private String niveau;
-    private String status;
-    private String idEtudiant;
 
 
     public Etudiant() {
@@ -22,10 +20,9 @@ public class Etudiant extends Utilisateur {
         this.nom = nom;
         this.prenom = prenom;
         this.niveau = niveau;
-        this.status = "Actif";
-        this.idEtudiant = idEtudiant;
     }
 
+    
 
     public String getNom() {
         return nom;
@@ -51,32 +48,26 @@ public class Etudiant extends Utilisateur {
     }
 
 
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-
     public Date getDateNaissance() {
         return dateNaissance;
     }
     public void setDateNaissance(Date dateNaissance) {
         this.dateNaissance = dateNaissance;
     }
-
-    public String getIdEtudiant() {
-        return idEtudiant;
-    }
-    public void setIdEtudiant(String idEtudiant) {
-        this.idEtudiant = idEtudiant;
+    public int getIdEtudiant() {
+        return super.getId();
     }
 
     @Override
     public String toString() {
-        return "Etudiant{" + "id=" + idEtudiant+ ", nom=" + nom + ", prenom=" + prenom + ", niveau=" + niveau + ", status=" + status + ", dateNaissance=" + dateNaissance + '}';
+        return "Etudiant [nom=" + nom + ", prenom=" + prenom + ", dateNaissance=" + dateNaissance + ", niveau=" + niveau
+                + ", getId()=" + getId() + ", getLogin()=" + getLogin() + ", getNom()=" + getNom()
+                + ", getMotDePasse()=" + getMotDePasse() + ", getPrenom()=" + getPrenom() + ", getEmail()=" + getEmail()
+                + ", getNiveau()=" + getNiveau() + ", getRole()=" + getRole() + ", getDateNaissance()="
+                + getDateNaissance() + ", isActif()=" + isActif() ;
     }
 
+    
 
+    
 }

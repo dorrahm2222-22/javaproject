@@ -15,10 +15,10 @@ public class NoteDAO {
     private Note mapRow(ResultSet rs) throws SQLException {
         Note note = new Note();
         note.setId(rs.getInt("id"));
-        note.setIdEtudiant(rs.getInt("idEtudiant"));
-        note.setIdMatiere(rs.getInt("idMatiere"));
+        note.setIdEtudiant(rs.getInt("etudiant_id"));
+        note.setIdMatiere(rs.getInt("matiere_id"));
         note.setNote(rs.getDouble("note"));
-        note.setTypeEvaluation(rs.getString("typeEvaluation"));
+        note.setTypeEvaluation(rs.getString("type_evaluation"));
         if (rs.getDate("date_evaluation") != null) {
             note.setDate_evaluation(rs.getDate("date_evaluation"));
         }
@@ -26,7 +26,7 @@ public class NoteDAO {
     }
 
     public int ajouter(Note note) {
-        String sql = "INSERT INTO note (idEtudiant, idMatiere, note, typeEvaluation, date_evaluation) "
+        String sql = "INSERT INTO note (etudiant_id,matiere_id, note, type_evaluation, date_evaluation) "
                 + "VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, note.getIdEtudiant());
@@ -73,12 +73,12 @@ public class NoteDAO {
         return null;
     }
 
- // Get all notes for a specific student
-    public List<Note> getNotesByEtudiant(int idEtudiant) {
+
+    public List<Note> getNotesByEtudiant(int etudiant_id) {
         List<Note> notes = new ArrayList<>();
-        String sql = "SELECT * FROM note WHERE idEtudiant = ?";
+        String sql = "SELECT * FROM note WHERE etudiant_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, idEtudiant);
+            ps.setInt(1, etudiant_id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) notes.add(mapRow(rs));
             }
@@ -89,11 +89,11 @@ public class NoteDAO {
     }
 
   // Get all notes for a specific subject
-    public List<Note> getNotesByMatiere(int idMatiere) {
+    public List<Note> getNotesByMatiere(int matiere_id) {
         List<Note> notes = new ArrayList<>();
-        String sql = "SELECT * FROM note WHERE idMatiere = ?";
+        String sql = "SELECT * FROM note WHERE matiere_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, idMatiere);
+            ps.setInt(1, matiere_id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) notes.add(mapRow(rs));
             }
@@ -103,13 +103,12 @@ public class NoteDAO {
         return notes;
     }
 
-   // Get all notes for a student in a specific subject
-    public List<Note> getNotesByEtudiantAndMatiere(int idEtudiant, int idMatiere) {
+    public List<Note> getNotesByEtudiantAndMatiere(int etudiant_id, int matiere_id) {
         List<Note> notes = new ArrayList<>();
-        String sql = "SELECT * FROM note WHERE idEtudiant = ? AND idMatiere = ?";
+        String sql = "SELECT * FROM note WHERE etudiant_id = ? AND matiere_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, idEtudiant);
-            ps.setInt(2, idMatiere);
+            ps.setInt(1, etudiant_id);
+            ps.setInt(2, matiere_id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) notes.add(mapRow(rs));
             }
@@ -120,8 +119,8 @@ public class NoteDAO {
     }
 
     public boolean modifier(Note note) {
-        String sql = "UPDATE note SET idEtudiant = ?, idMatiere = ?, note = ?, "
-                + "typeEvaluation = ?, date_evaluation = ? WHERE id = ?";
+        String sql = "UPDATE note SET etudiant_id = ?, matiere_id = ?, note = ?, "
+                + "type_evaluation = ?, date_evaluation = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, note.getIdEtudiant());
             ps.setInt(2, note.getIdMatiere());
@@ -151,12 +150,11 @@ public class NoteDAO {
         return false;
     }
 
-    // Calculate average for a student in a subject
-    public double getMoyenneByEtudiantAndMatiere(int idEtudiant, int idMatiere) {
-        String sql = "SELECT AVG(note) as moyenne FROM note WHERE idEtudiant = ? AND idMatiere = ?";
+    public double getMoyenneByEtudiantAndMatiere(int etudiant_id, int matiere_id) {
+        String sql = "SELECT AVG(note) as moyenne FROM note WHERE etudiant_id = ? AND matiere_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, idEtudiant);
-            ps.setInt(2, idMatiere);
+            ps.setInt(1, etudiant_id);
+            ps.setInt(2, matiere_id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getDouble("moyenne");
             }

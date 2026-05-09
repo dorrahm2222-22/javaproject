@@ -22,19 +22,24 @@ public class AdminDAO {
         admin.setActif(rs.getBoolean("actif"));
         return admin;
     }
-public int ajouter(Admin admin) throws SQLException {
-    String sql = "INSERT INTO admin (login, motdepasse, email, actif) VALUES (?, ?, ?, ?)";
-    try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    public int ajouter(Admin admin) throws SQLException {
+    String sql1 = "INSERT INTO utilisateur (login, motdepasse, email, actif, role) VALUES ( ?, ?, ?, ?, 'admin')";
+    try (PreparedStatement ps = connection.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS)) {
         ps.setString(1, admin.getLogin());
         ps.setString(2, admin.getMotDePasse());
         ps.setString(3, admin.getEmail());
         ps.setBoolean(4, admin.isActif());
         ps.executeUpdate();
-        try (ResultSet keys = ps.getGeneratedKeys()) {
-            if (keys.next()) return keys.getInt(1);
+        ResultSet keys = ps.getGeneratedKeys();
+        if (keys.next()) {
+            int id = keys.getInt(1);
+            String sql2 = "INSERT INTO admin (id) VALUES (?)";
+            try (PreparedStatement ps2 = connection.prepareStatement(sql2)) {
+                ps2.setInt(1, id);
+                ps2.executeUpdate();
+            }
+            return id;
         }
-    } catch (SQLException e) {
-        System.err.println("Erreur ajouter admin: " + e.getMessage());
     }
     return -1;
 }
@@ -42,7 +47,7 @@ public int ajouter(Admin admin) throws SQLException {
 
 public List<Admin> lister() {
         List<Admin> admins = new ArrayList<>();
-        String sql = "SELECT * FROM admin";
+        String sql = "SELECT u.* FROM utilisateur u JOIN admin a ON u.id = a.id ORDER BY u.id";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -56,7 +61,7 @@ public List<Admin> lister() {
 
 
 public Admin getAdminById(int id){
-        String sql = "SELECT * FROM admin WHERE id = ?";
+        String sql = "SELECT u.* FROM utilisateur u JOIN admin a ON u.id = a.id WHERE u.id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -71,7 +76,7 @@ public Admin getAdminById(int id){
 
 }
     public Admin getAdminByLogin(String login) {
-        String sql = "SELECT * FROM admin WHERE login = ?";
+        String sql = "SELECT u.* FROM utilisateur u JOIN admin a ON u.id = a.id WHERE u.login = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, login);
             try (ResultSet rs = ps.executeQuery()) {
@@ -84,7 +89,7 @@ public Admin getAdminById(int id){
     }
 
     public boolean modifier(Admin admin) {
-        String sql = "UPDATE admin SET login = ?, motdepasse = ?, email = ?, actif = ? WHERE id = ?";
+        String sql = "UPDATE utilisateur SET login = ?, motdepasse = ?, email = ?, actif = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, admin.getLogin());
             ps.setString(2, admin.getMotDePasse());
@@ -99,7 +104,7 @@ public Admin getAdminById(int id){
     }
 
     public boolean supprimer(int id) {
-        String sql = "DELETE FROM admin WHERE id = ?";
+        String sql = "DELETE FROM utilisateur WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;

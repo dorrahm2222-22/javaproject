@@ -10,7 +10,6 @@ public class MainFrame extends JFrame {
 
     private final Utilisateur currentUser;
 
-    // Colors
     private final Color BG_COLOR       = new Color(15, 23, 42);
     private final Color SIDEBAR_COLOR  = new Color(22, 33, 55);
     private final Color ACCENT_COLOR   = new Color(56, 189, 248);
@@ -35,11 +34,8 @@ public class MainFrame extends JFrame {
         add(buildSidebar(), BorderLayout.WEST);
         add(buildContent(), BorderLayout.CENTER);
 
-        // Show first panel by default
         showDefaultPanel();
     }
-
-    // ─── SIDEBAR ────────────────────────────────────────────────────────────────
 
     private JPanel buildSidebar() {
         JPanel sidebar = new JPanel();
@@ -48,7 +44,6 @@ public class MainFrame extends JFrame {
         sidebar.setPreferredSize(new Dimension(220, 0));
         sidebar.setBorder(new EmptyBorder(0, 0, 0, 0));
 
-        // Header
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setBackground(SIDEBAR_COLOR);
@@ -65,8 +60,7 @@ public class MainFrame extends JFrame {
         appName.setForeground(ACCENT_COLOR);
         appName.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        String roleDisplay = currentUser.getRole().substring(0, 1).toUpperCase()
-                + currentUser.getRole().substring(1).toLowerCase();
+        String roleDisplay = currentUser.getRole().substring(0, 1).toUpperCase()+ currentUser.getRole().substring(1).toLowerCase();
         JLabel roleLabel = new JLabel(roleDisplay + " • " + currentUser.getLogin());
         roleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         roleLabel.setForeground(SUBTLE_COLOR);
@@ -80,7 +74,6 @@ public class MainFrame extends JFrame {
 
         sidebar.add(header);
 
-        // Divider
         sidebar.add(buildDivider());
         sidebar.add(Box.createVerticalStrut(10));
 
@@ -174,13 +167,12 @@ public class MainFrame extends JFrame {
         return btn;
     }
 
-    // ─── CONTENT AREA ───────────────────────────────────────────────────────────
 
     private JPanel buildContent() {
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(BG_COLOR);
 
-        // Top bar
+       
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(BG_COLOR);
         topBar.setBorder(new EmptyBorder(20, 28, 16, 28));
@@ -190,7 +182,7 @@ public class MainFrame extends JFrame {
         lblPageTitle.setForeground(TEXT_COLOR);
         topBar.add(lblPageTitle, BorderLayout.WEST);
 
-        // User badge
+
         JLabel badge = new JLabel(currentUser.getLogin() + "  👤");
         badge.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         badge.setForeground(SUBTLE_COLOR);
@@ -198,12 +190,11 @@ public class MainFrame extends JFrame {
 
         wrapper.add(topBar, BorderLayout.NORTH);
 
-        // Card panels
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
         contentPanel.setBackground(BG_COLOR);
 
-        // Add panels based on role
+        
         String role = currentUser.getRole().toLowerCase();
 
         if (role.equals("admin")) {

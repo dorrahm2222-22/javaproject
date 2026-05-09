@@ -10,24 +10,12 @@ import modele.Etudiant;
 public class EtudiantControleur {
     private final EtudiantDAO etudiantDAO;
 
-    public EtudiantControleur(Connection connection)throws SQLException {
+    public EtudiantControleur(Connection connection) throws SQLException {
         this.etudiantDAO = new EtudiantDAO(connection);
     }
 
-    // =====================
-    // AJOUTER
-    // =====================
-    public boolean ajouterEtudiant(String login, String motDePasse, String email,
-                                    String nom, String prenom, String niveau,
-                                    String idEtudiant, Date dateNaissance)throws SQLException {
+    public boolean ajouterEtudiant(String login, String motDePasse, String email,String nom, String prenom, String niveau,Date dateNaissance) throws SQLException {
 
-        // 1. Check if login already exists
-        if (etudiantDAO.getEtudiantByLogin(login) != null) {
-            System.out.println("Erreur: ce login existe déjà.");
-            return false;
-        }
-
-        // 2. Basic validation
         if (login == null || login.isEmpty() ||
             motDePasse == null || motDePasse.isEmpty() ||
             nom == null || nom.isEmpty()) {
@@ -35,7 +23,11 @@ public class EtudiantControleur {
             return false;
         }
 
-        // 3. Build and save
+    
+        if (etudiantDAO.getEtudiantByLogin(login) != null) {
+            System.out.println("Erreur: ce login existe déjà.");
+            return false;
+        }
         Etudiant etudiant = new Etudiant();
         etudiant.setLogin(login);
         etudiant.setMotDePasse(motDePasse);
@@ -43,9 +35,7 @@ public class EtudiantControleur {
         etudiant.setNom(nom);
         etudiant.setPrenom(prenom);
         etudiant.setNiveau(niveau);
-        etudiant.setIdEtudiant(idEtudiant);
         etudiant.setDateNaissance(dateNaissance);
-        etudiant.setStatus("Actif");
         etudiant.setActif(true);
 
         try {
@@ -60,30 +50,20 @@ public class EtudiantControleur {
         return false;
     }
 
-    // =====================
-    // MODIFIER
-    // =====================
-    public boolean modifierEtudiant(int id, String login, String motDePasse, String email,
-                                     String nom, String prenom, String niveau,
-                                     String idEtudiant, Date dateNaissance, String status)throws SQLException {
-
-        // 1. Check student exists
+    public boolean modifierEtudiant(int id, String login, String motDePasse, String email, String nom, String prenom, String niveau,Date dateNaissance) throws SQLException {
         Etudiant etudiant = etudiantDAO.getEtudiantById(id);
         if (etudiant == null) {
             System.out.println("Erreur: étudiant introuvable.");
             return false;
         }
 
-        // 2. Update fields
         etudiant.setLogin(login);
         etudiant.setMotDePasse(motDePasse);
         etudiant.setEmail(email);
         etudiant.setNom(nom);
         etudiant.setPrenom(prenom);
         etudiant.setNiveau(niveau);
-        etudiant.setIdEtudiant(idEtudiant);
         etudiant.setDateNaissance(dateNaissance);
-        etudiant.setStatus(status);
 
         boolean result = etudiantDAO.modifier(etudiant);
         if (result) System.out.println("Etudiant modifié avec succès.");
@@ -91,9 +71,6 @@ public class EtudiantControleur {
         return result;
     }
 
-    // =====================
-    // SUPPRIMER
-    // =====================
     public boolean supprimerEtudiant(int id) throws SQLException {
         Etudiant etudiant = etudiantDAO.getEtudiantById(id);
         if (etudiant == null) {
@@ -106,9 +83,6 @@ public class EtudiantControleur {
         return result;
     }
 
-    // =====================
-    // RECHERCHE & AFFICHAGE
-    // =====================
     public List<Etudiant> getAllEtudiants() {
         try {
             return etudiantDAO.getAllEtudiants();
@@ -136,28 +110,23 @@ public class EtudiantControleur {
         return list;
     }
 
-    // =====================
-    // ACTIVER / DESACTIVER
-    // =====================
-    public boolean activerEtudiant(int id) {
+    public boolean activerEtudiant(int id) throws SQLException {
         Etudiant etudiant = etudiantDAO.getEtudiantById(id);
         if (etudiant == null) {
             System.out.println("Etudiant introuvable.");
             return false;
         }
         etudiant.setActif(true);
-        etudiant.setStatus("Actif");
         return etudiantDAO.modifier(etudiant);
     }
 
-    public boolean desactiverEtudiant(int id) {
+    public boolean desactiverEtudiant(int id) throws SQLException {
         Etudiant etudiant = etudiantDAO.getEtudiantById(id);
         if (etudiant == null) {
             System.out.println("Etudiant introuvable.");
             return false;
         }
         etudiant.setActif(false);
-        etudiant.setStatus("Inactif");
         return etudiantDAO.modifier(etudiant);
     }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import modele.Enseignant;
 import modele.Matiere;
 import modele.Utilisateur;
 import util.DBConnection;
@@ -83,18 +84,39 @@ public class MatierePanel extends JPanel {
         return scroll;
     }
 
-    public void loadData() {
+ public void loadData() {
         tableModel.setRowCount(0);
         boolean isAdmin = currentUser.getRole().equalsIgnoreCase("admin");
-        List<Matiere> list = matiereDAO.getAllMatieres();
+        boolean isEnseignant = currentUser.getRole().equalsIgnoreCase("enseignant");
+ 
+        List<Matiere> list;
+ 
+        if (isAdmin) {
+            // Admin sees all matières
+            list = matiereDAO.getAllMatieres();
+        } else if (isEnseignant) {
+            // FIX: teacher sees only their assigned matière via matiere_id on their account
+            list = matiereDAO.getMatieresByEnseignant(((Enseignant) currentUser).getMatiereId());
+        } else {
+            // Student sees all matières (read-only, no actions column)
+            list = matiereDAO.getAllMatieres();
+        }
+ 
         for (Matiere m : list) {
             if (isAdmin) {
-                tableModel.addRow(new Object[]{m.getId(), m.getNom(), m.getCoefficient(), m.getVolumeHoraire(), m.getSemestre(), "actions"});
+                tableModel.addRow(new Object[]{
+                    m.getId(), m.getNom(), m.getCoefficient(),
+                    m.getVolumeHoraire(), m.getSemestre(), "actions"
+                });
             } else {
-                tableModel.addRow(new Object[]{m.getId(), m.getNom(), m.getCoefficient(), m.getVolumeHoraire(), m.getSemestre()});
+                tableModel.addRow(new Object[]{
+                    m.getId(), m.getNom(), m.getCoefficient(),
+                    m.getVolumeHoraire(), m.getSemestre()
+                });
             }
         }
     }
+ 
 
     public void showForm(Matiere existing) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this),
@@ -128,10 +150,20 @@ public class MatierePanel extends JPanel {
             try { m.setCoefficient(Integer.parseInt(fCoef.getText().trim())); } catch (NumberFormatException ex) { m.setCoefficient(1); }
             try { m.setVolumeHoraire(Integer.parseInt(fVol.getText().trim())); } catch (NumberFormatException ex) { m.setVolumeHoraire(0); }
             m.setSemestre(fSem.getText().trim());
-            if (existing == null) matiereDAO.ajouter(m);
-            else matiereDAO.modifier(m);
-            loadData();
-            dialog.dispose();
+            boolean success;
+            if (existing == null) {
+                success = matiereDAO.ajouter(m) != -1;
+            } else {
+                success = matiereDAO.modifier(m);
+            }
+            if (!success) {
+                JOptionPane.showMessageDialog(dialog, "Erreur lors de l'enregistrement.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            else {
+                loadData();
+                dialog.dispose();
+            }
         });
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 12));

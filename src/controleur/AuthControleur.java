@@ -15,7 +15,6 @@ public class AuthControleur {
     private final EnseignantDAO enseignantDAO;
     private final EtudiantDAO etudiantDAO;
 
-    // The currently logged-in user
     private Utilisateur utilisateurConnecte;
 
     public AuthControleur(Connection connection) throws SQLException {
@@ -24,9 +23,6 @@ public class AuthControleur {
         this.etudiantDAO = new EtudiantDAO(connection);
     }
 
-    // =====================
-    // LOGIN
-    // =====================
     public Utilisateur connecter(String login, String motDePasse) throws SQLException {
         // 1. Check Admin table
         Admin admin = adminDAO.getAdminByLogin(login);
@@ -52,7 +48,6 @@ public class AuthControleur {
             return enseignant;
         }
 
-        // 3. Check Etudiant table
         Etudiant etudiant = etudiantDAO.getEtudiantByLogin(login);
         if (etudiant != null && etudiant.getMotDePasse().equals(motDePasse)) {
             if (!etudiant.isActif()) {
@@ -64,22 +59,18 @@ public class AuthControleur {
             return etudiant;
         }
 
-        // 4. Nothing matched
+    
         System.out.println("Login ou mot de passe incorrect.");
         return null;
     }
 
-    // =====================
-    // LOGOUT
-    // =====================
+  
     public void deconnecter() {
         System.out.println("Au revoir, " + utilisateurConnecte.getLogin() + "!");
         utilisateurConnecte = null;
     }
 
-    // =====================
-    // SESSION CHECKS
-    // =====================
+
     public Utilisateur getUtilisateurConnecte() {
         return utilisateurConnecte;
     }

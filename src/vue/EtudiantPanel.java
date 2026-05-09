@@ -14,7 +14,7 @@ import util.DBConnection;
 
 public class EtudiantPanel extends JPanel {
 
-    private Utilisateur currentUser;
+    public Utilisateur currentUser;
     private EtudiantDAO etudiantDAO;
     private JTable table;
     private DefaultTableModel tableModel;
@@ -63,12 +63,9 @@ public class EtudiantPanel extends JPanel {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         buttons.setBackground(BG_COLOR);
 
-        boolean isAdmin = currentUser.getRole().equalsIgnoreCase("admin");
-        if (isAdmin) {
-            JButton btnAdd = styledButton("+ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
-            btnAdd.addActionListener(e -> showForm(null));
-            buttons.add(btnAdd);
-        }
+        JButton btnAdd = styledButton("+ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
+        btnAdd.addActionListener(e -> showForm(null));
+        buttons.add(btnAdd);
 
         JButton btnRefresh = styledButton("↻ Actualiser", PANEL_COLOR, TEXT_COLOR);
         btnRefresh.addActionListener(e -> loadData());
@@ -80,24 +77,18 @@ public class EtudiantPanel extends JPanel {
     }
 
     private JScrollPane buildTable() {
-        boolean isAdmin = currentUser.getRole().equalsIgnoreCase("admin");
-        String[] cols = isAdmin
-            ? new String[]{"ID", "ID Étudiant", "Nom", "Prénom", "Email", "Niveau", "Statut", "Actions"}
-            : new String[]{"ID", "ID Étudiant", "Nom", "Prénom", "Email", "Niveau", "Statut"};
+        // Removed "Role" from columns
+        String[] cols = {"ID", "Nom", "Prénom", "Date Naissance", "Niveau", "Login", "Mot de passe", "Actif", "Email", "Actions"};
 
         tableModel = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) {
-                return isAdmin && c == 7;
-            }
+            @Override
+            public boolean isCellEditable(int r, int c) { return c == 9; } // Actions is now index 9
         };
         table = new JTable(tableModel);
         styleTable(table);
-
-        if (isAdmin) {
-            table.getColumn("Actions").setCellRenderer(new ActionRenderer());
-            table.getColumn("Actions").setCellEditor(new ActionEditor(new JCheckBox()));
-            table.getColumn("Actions").setMinWidth(120);
-        }
+        table.getColumn("Actions").setCellRenderer(new ActionRenderer());
+        table.getColumn("Actions").setCellEditor(new ActionEditor(new JCheckBox()));
+        table.getColumn("Actions").setMinWidth(120);
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.getViewport().setBackground(PANEL_COLOR);
@@ -109,19 +100,12 @@ public class EtudiantPanel extends JPanel {
         tableModel.setRowCount(0);
         try {
             List<Etudiant> list = etudiantDAO.getAllEtudiants();
-            boolean isAdmin = currentUser.getRole().equalsIgnoreCase("admin");
             for (Etudiant e : list) {
-                if (isAdmin) {
-                    tableModel.addRow(new Object[]{
-                        e.getId(), e.getIdEtudiant(), e.getNom(), e.getPrenom(),
-                        e.getEmail(), e.getNiveau(), e.getStatus(), "actions"
-                    });
-                } else {
-                    tableModel.addRow(new Object[]{
-                        e.getId(), e.getIdEtudiant(), e.getNom(), e.getPrenom(),
-                        e.getEmail(), e.getNiveau(), e.getStatus()
-                    });
-                }
+                tableModel.addRow(new Object[]{
+                    e.getId(), e.getNom(), e.getPrenom(), e.getDateNaissance(),
+                    e.getNiveau(), e.getLogin(), "********", 
+                    e.isActif() ? "Oui" : "Non", e.getEmail(), "actions"
+                });
             }
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
@@ -132,77 +116,81 @@ public class EtudiantPanel extends JPanel {
         tableModel.setRowCount(0);
         try {
             List<Etudiant> list = etudiantDAO.getAllEtudiants();
-            boolean isAdmin = currentUser.getRole().equalsIgnoreCase("admin");
             for (Etudiant e : list) {
                 boolean match = e.getNom().toLowerCase().contains(query.toLowerCase())
                     || e.getPrenom().toLowerCase().contains(query.toLowerCase())
-                    || (e.getIdEtudiant() != null && e.getIdEtudiant().toLowerCase().contains(query.toLowerCase()));
+                    || e.getLogin().toLowerCase().contains(query.toLowerCase());
                 if (match) {
-                    if (isAdmin) {
-                        tableModel.addRow(new Object[]{
-                            e.getId(), e.getIdEtudiant(), e.getNom(), e.getPrenom(),
-                            e.getEmail(), e.getNiveau(), e.getStatus(), "actions"
-                        });
-                    } else {
-                        tableModel.addRow(new Object[]{
-                            e.getId(), e.getIdEtudiant(), e.getNom(), e.getPrenom(),
-                            e.getEmail(), e.getNiveau(), e.getStatus()
-                        });
-                    }
+                    tableModel.addRow(new Object[]{
+                        e.getId(), e.getNom(), e.getPrenom(), e.getDateNaissance(),
+                        e.getNiveau(), e.getLogin(), "********",
+                        e.isActif() ? "Oui" : "Non", e.getEmail(), "actions"
+                    });
                 }
             }
-        } catch (SQLException ex) { /* ignore */ }
+        } catch (SQLException ex) {  }
     }
 
     public void showForm(Etudiant existing) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this),
             existing == null ? "Ajouter un étudiant" : "Modifier l'étudiant", true);
-        dialog.setSize(420, 520);
+        dialog.setSize(420, 550);
         dialog.setLocationRelativeTo(this);
         dialog.getContentPane().setBackground(PANEL_COLOR);
         dialog.setLayout(new BorderLayout());
 
-        JPanel form = new JPanel(new GridLayout(0, 1, 6, 6));
+        JPanel form = new JPanel(new GridLayout(0, 1, 4, 4));
         form.setBackground(PANEL_COLOR);
-        form.setBorder(new EmptyBorder(24, 24, 16, 24));
+        form.setBorder(new EmptyBorder(20, 24, 20, 24));
 
-        JTextField fLogin   = formField(existing != null ? existing.getLogin() : "");
-        JTextField fNom     = formField(existing != null ? existing.getNom() : "");
-        JTextField fPrenom  = formField(existing != null ? existing.getPrenom() : "");
-        JTextField fEmail   = formField(existing != null ? existing.getEmail() : "");
-        JTextField fNiveau  = formField(existing != null ? existing.getNiveau() : "");
-        JTextField fIdEt    = formField(existing != null ? existing.getIdEtudiant() : "");
+        JTextField fLogin  = formField(existing != null ? existing.getLogin() : "");
+        JTextField fNom    = formField(existing != null ? existing.getNom() : "");
+        JTextField fPrenom = formField(existing != null ? existing.getPrenom() : "");
+        JTextField fEmail  = formField(existing != null ? existing.getEmail() : "");
+        JTextField fNiveau = formField(existing != null ? existing.getNiveau() : "");
         JPasswordField fPwd = new JPasswordField(existing != null ? existing.getMotDePasse() : "");
+        JTextField fDateNaissance = formField(existing != null && existing.getDateNaissance() != null ? existing.getDateNaissance().toString() : "YYYY-MM-DD");
+        
+        JCheckBox fActif = new JCheckBox("Compte Actif", existing == null || existing.isActif());
+        fActif.setBackground(PANEL_COLOR);
+        fActif.setForeground(TEXT_COLOR);
+
         styleField(fPwd);
 
-        form.add(formLabel("Login"));         form.add(fLogin);
-        form.add(formLabel("Nom"));           form.add(fNom);
-        form.add(formLabel("Prénom"));        form.add(fPrenom);
-        form.add(formLabel("Email"));         form.add(fEmail);
-        form.add(formLabel("Niveau"));        form.add(fNiveau);
-        form.add(formLabel("ID Étudiant"));   form.add(fIdEt);
-        form.add(formLabel("Mot de passe"));  form.add(fPwd);
+        form.add(formLabel("Login"));        form.add(fLogin);
+        form.add(formLabel("Nom"));          form.add(fNom);
+        form.add(formLabel("Prénom"));       form.add(fPrenom);
+        form.add(formLabel("Email"));        form.add(fEmail);
+        form.add(formLabel("Niveau"));       form.add(fNiveau);
+        form.add(formLabel("Mot de passe")); form.add(fPwd);
+        form.add(formLabel("Date de naissance (YYYY-MM-DD)")); form.add(fDateNaissance);
+        form.add(new JLabel(""));            form.add(fActif);
 
-        JButton btnSave = styledButton(existing == null ? "Ajouter" : "Modifier", ACCENT_COLOR, new Color(15, 23, 42));
+        JButton btnSave   = styledButton(existing == null ? "Ajouter" : "Modifier", ACCENT_COLOR, new Color(15, 23, 42));
         JButton btnCancel = styledButton("Annuler", FIELD_BG, TEXT_COLOR);
         btnCancel.addActionListener(e -> dialog.dispose());
 
         btnSave.addActionListener(e -> {
-            Etudiant et = existing != null ? existing : new Etudiant();
-            et.setLogin(fLogin.getText().trim());
-            et.setNom(fNom.getText().trim());
-            et.setPrenom(fPrenom.getText().trim());
-            et.setEmail(fEmail.getText().trim());
-            et.setNiveau(fNiveau.getText().trim());
-            et.setIdEtudiant(fIdEt.getText().trim());
-            et.setMotDePasse(new String(fPwd.getPassword()));
             try {
+                Etudiant et = existing != null ? existing : new Etudiant();
+                et.setLogin(fLogin.getText().trim());
+                et.setNom(fNom.getText().trim());
+                et.setPrenom(fPrenom.getText().trim());
+                et.setEmail(fEmail.getText().trim());
+                et.setNiveau(fNiveau.getText().trim());
+                et.setMotDePasse(new String(fPwd.getPassword()));
+                et.setActif(fActif.isSelected());
+                
+                String dateStr = fDateNaissance.getText().trim();
+                et.setDateNaissance(dateStr.isEmpty() || dateStr.equals("YYYY-MM-DD") ? null : java.sql.Date.valueOf(dateStr));
+
                 if (existing == null) etudiantDAO.ajouter(et);
                 else etudiantDAO.modifier(et);
+                
                 loadData();
                 dialog.dispose();
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Erreur: " + ex.getMessage());
             }
         });
 
@@ -231,8 +219,6 @@ public class EtudiantPanel extends JPanel {
         Etudiant et = etudiantDAO.getEtudiantById(id);
         if (et != null) showForm(et);
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void styleTable(JTable t) {
         t.setBackground(PANEL_COLOR);
@@ -276,15 +262,13 @@ public class EtudiantPanel extends JPanel {
         l.setForeground(SUBTLE_COLOR); l.setFont(new Font("Segoe UI", Font.BOLD, 12)); return l;
     }
 
-    // ── Action Renderer/Editor ─────────────────────────────────────────────────
-
     class ActionRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
         ActionRenderer() { setLayout(new FlowLayout(FlowLayout.CENTER, 6, 4)); setBackground(PANEL_COLOR); }
         public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
             removeAll();
-            JButton e = makeBtn("✏", new Color(30,58,90), ACCENT_COLOR);
-            JButton d = makeBtn("🗑", new Color(60,20,20), DANGER);
-            add(e); add(d); return this;
+            add(makeBtn("✏", new Color(30,58,90), ACCENT_COLOR));
+            add(makeBtn("🗑", new Color(60,20,20), DANGER));
+            return this;
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);

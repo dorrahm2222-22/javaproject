@@ -24,28 +24,18 @@ public class MoyenneControleur {
         this.matiereDAO = new MatiereDAO(connection);
     }
 
-    // =====================
-    // CALCULER ET SAUVEGARDER
-    // =====================
-    public boolean calculerEtSauvegarderMoyenne(int idEtudiant,
-                                                 String semestre,
-                                                 String anneeAcademique) throws SQLException {
 
-        // 1. Check student exists
+    public boolean calculerEtSauvegarderMoyenne(int idEtudiant, String semestre,String anneeAcademique) throws SQLException {
+    
         if (etudiantDAO.getEtudiantById(idEtudiant) == null) {
             System.out.println("Erreur: étudiant introuvable.");
             return false;
         }
-
-        // 2. Get all subjects for this semester
         List<Matiere> matieres = matiereDAO.getMatieresBySemestre(semestre);
         if (matieres.isEmpty()) {
             System.out.println("Erreur: aucune matière trouvée pour ce semestre.");
             return false;
         }
-
-        // 3. Calculate weighted average
-        // Formula: sum(note * coefficient) / sum(coefficients)
         double sommeNotesPonderees = 0;
         int sommeCoefficients = 0;
 
@@ -54,7 +44,6 @@ public class MoyenneControleur {
                     idEtudiant, matiere.getId());
 
             if (!notes.isEmpty()) {
-                // Average of all notes for this subject
                 double moyenneMatiere = notes.stream()
                         .mapToDouble(Note::getNote)
                         .average()
@@ -65,21 +54,17 @@ public class MoyenneControleur {
             }
         }
 
-        // 4. Check if student has any notes at all
         if (sommeCoefficients == 0) {
             System.out.println("Erreur: aucune note trouvée pour cet étudiant ce semestre.");
             return false;
         }
 
-        // 5. Compute final average
         double valeurMoyenne = sommeNotesPonderees / sommeCoefficients;
 
-        // 6. Check if moyenne already exists for this student/semester
         Moyenneg existante = moyennegDAO.getMoyenneByEtudiantAndSemestre(
                 idEtudiant, semestre);
 
         if (existante != null) {
-            // Update existing
             existante.setValeur(valeurMoyenne);
             existante.setAnneeAcademique(anneeAcademique);
             boolean result = moyennegDAO.modifier(existante);
@@ -89,7 +74,6 @@ public class MoyenneControleur {
             }
             return result;
         } else {
-            // Create new
             Moyenneg moyenne = new Moyenneg();
             moyenne.setIdEtudiant(idEtudiant);
             moyenne.setValeur(valeurMoyenne);
@@ -106,9 +90,6 @@ public class MoyenneControleur {
         }
     }
 
-    // =====================
-    // AFFICHAGE
-    // =====================
     public List<Moyenneg> getMoyennesByEtudiant(int idEtudiant) throws SQLException {
         if (etudiantDAO.getEtudiantById(idEtudiant) == null) {
             System.out.println("Erreur: étudiant introuvable.");
@@ -131,9 +112,6 @@ public class MoyenneControleur {
         return list;
     }
 
-    // =====================
-    // SUPPRIMER
-    // =====================
     public boolean supprimerMoyenne(int id) throws SQLException {
         boolean result = moyennegDAO.supprimer(id);
         if (result) System.out.println("Moyenne supprimée avec succès.");
@@ -141,20 +119,6 @@ public class MoyenneControleur {
         return result;
     }
 
-    // =====================
-    // STATISTIQUES
-    // =====================
-
-    // Best student average in a semester
-    public Moyenneg getMeilleureMoyenne(String semestre) throws SQLException {
-        List<Moyenneg> list = moyennegDAO.getAllMoyennes();
-        return list.stream()
-                .filter(m -> m.getSemestre().equals(semestre))
-                .max((a, b) -> Double.compare(a.getValeur(), b.getValeur()))
-                .orElse(null);
-    }
-
-    // Count how many students passed (moyenne >= 10)
     public long getNombreEtudiantsAdmis(String semestre) throws SQLException {
         List<Moyenneg> list = moyennegDAO.getAllMoyennes();
         return list.stream()
