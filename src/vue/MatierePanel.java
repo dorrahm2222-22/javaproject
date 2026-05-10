@@ -49,12 +49,12 @@ public class MatierePanel extends JPanel {
 
         boolean isAdmin = currentUser.getRole().equalsIgnoreCase("admin");
         if (isAdmin) {
-            JButton btnAdd = styledButton("+ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
+            JButton btnAdd = styledButton("➕ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
             btnAdd.addActionListener(e -> showForm(null));
             bar.add(btnAdd);
         }
 
-        JButton btnRefresh = styledButton("↻ Actualiser", PANEL_COLOR, TEXT_COLOR);
+        JButton btnRefresh = styledButton("🔄 Actualiser", PANEL_COLOR, TEXT_COLOR);
         btnRefresh.addActionListener(e -> loadData());
         bar.add(btnRefresh);
         return bar;
@@ -135,10 +135,14 @@ public class MatierePanel extends JPanel {
         JTextField fVol  = formField(existing != null ? String.valueOf(existing.getVolumeHoraire()) : "");
         JTextField fSem  = formField(existing != null ? existing.getSemestre() : "");
 
-        form.add(formLabel("Nom"));            form.add(fNom);
-        form.add(formLabel("Coefficient"));    form.add(fCoef);
-        form.add(formLabel("Volume Horaire")); form.add(fVol);
-        form.add(formLabel("Semestre"));       form.add(fSem);
+        form.add(formLabel("Nom"));            
+        form.add(fNom);
+        form.add(formLabel("Coefficient"));    
+        form.add(fCoef);
+        form.add(formLabel("Volume Horaire")); 
+        form.add(fVol);
+        form.add(formLabel("Semestre"));       
+        form.add(fSem);
 
         JButton btnSave   = styledButton(existing == null ? "Ajouter" : "Modifier", ACCENT_COLOR, new Color(15,23,42));
         JButton btnCancel = styledButton("Annuler", FIELD_BG, TEXT_COLOR);
@@ -201,7 +205,7 @@ public class MatierePanel extends JPanel {
 
     private JButton styledButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text); btn.setBackground(bg); btn.setForeground(fg);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFont(new Font("Dialog", Font.BOLD, 13));
         btn.setFocusPainted(false); btn.setBorderPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR)); btn.setBorder(new EmptyBorder(8, 16, 8, 16));
         return btn;
@@ -227,7 +231,7 @@ public class MatierePanel extends JPanel {
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Segoe UI", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
         }
     }
 
@@ -245,7 +249,7 @@ public class MatierePanel extends JPanel {
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Segoe UI", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
         }
         public Component getTableCellEditorComponent(JTable t, Object v, boolean sel, int row, int col) { currentRow = row; return container; }
         public Object getCellEditorValue() { return ""; }

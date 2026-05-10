@@ -51,15 +51,18 @@ public class MainFrame extends JFrame {
         header.setAlignmentX(Component.LEFT_ALIGNMENT);
         header.setMaximumSize(new Dimension(220, 120));
 
+        // Logo 
         JLabel logo = new JLabel("🎓");
-        logo.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 30));
+        logo.setFont(new Font("Dialog", Font.PLAIN, 30));
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // App name
         JLabel appName = new JLabel("EcoleManager");
         appName.setFont(new Font("Georgia", Font.BOLD, 16));
         appName.setForeground(ACCENT_COLOR);
         appName.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // Role and login
         String roleDisplay = currentUser.getRole().substring(0, 1).toUpperCase()+ currentUser.getRole().substring(1).toLowerCase();
         JLabel roleLabel = new JLabel(roleDisplay + " • " + currentUser.getLogin());
         roleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -107,7 +110,7 @@ public class MainFrame extends JFrame {
         JButton btnLogout = new JButton("⬅  Se déconnecter");
         btnLogout.setBackground(SIDEBAR_COLOR);
         btnLogout.setForeground(ERROR_COLOR());
-        btnLogout.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        btnLogout.setFont(new Font("Dialog", Font.PLAIN, 13));
         btnLogout.setBorderPainted(false);
         btnLogout.setFocusPainted(false);
         btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -144,7 +147,7 @@ public class MainFrame extends JFrame {
         JButton btn = new JButton(icon + "  " + label);
         btn.setBackground(SIDEBAR_COLOR);
         btn.setForeground(TEXT_COLOR);
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btn.setFont(new Font("Dialog", Font.PLAIN, 14));
         btn.setBorderPainted(false);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -184,7 +187,7 @@ public class MainFrame extends JFrame {
 
 
         JLabel badge = new JLabel(currentUser.getLogin() + "  👤");
-        badge.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        badge.setFont(new Font("Dialog", Font.PLAIN, 13));
         badge.setForeground(SUBTLE_COLOR);
         topBar.add(badge, BorderLayout.EAST);
 

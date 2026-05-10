@@ -63,11 +63,11 @@ public class EtudiantPanel extends JPanel {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         buttons.setBackground(BG_COLOR);
 
-        JButton btnAdd = styledButton("+ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
+        JButton btnAdd = styledButton("➕ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
         btnAdd.addActionListener(e -> showForm(null));
         buttons.add(btnAdd);
 
-        JButton btnRefresh = styledButton("↻ Actualiser", PANEL_COLOR, TEXT_COLOR);
+        JButton btnRefresh = styledButton("🔄 Actualiser", PANEL_COLOR, TEXT_COLOR);
         btnRefresh.addActionListener(e -> loadData());
         buttons.add(btnRefresh);
 
@@ -157,12 +157,18 @@ public class EtudiantPanel extends JPanel {
 
         styleField(fPwd);
 
-        form.add(formLabel("Login"));        form.add(fLogin);
-        form.add(formLabel("Nom"));          form.add(fNom);
-        form.add(formLabel("Prénom"));       form.add(fPrenom);
-        form.add(formLabel("Email"));        form.add(fEmail);
-        form.add(formLabel("Niveau"));       form.add(fNiveau);
-        form.add(formLabel("Mot de passe")); form.add(fPwd);
+        form.add(formLabel("Login"));        
+        form.add(fLogin);
+        form.add(formLabel("Nom"));          
+        form.add(fNom);
+        form.add(formLabel("Prénom"));       
+        form.add(fPrenom);
+        form.add(formLabel("Email"));        
+        form.add(fEmail);
+        form.add(formLabel("Niveau"));       
+        form.add(fNiveau);
+        form.add(formLabel("Mot de passe")); 
+        form.add(fPwd);
         form.add(formLabel("Date de naissance (YYYY-MM-DD)")); form.add(fDateNaissance);
         form.add(new JLabel(""));            form.add(fActif);
 
@@ -239,7 +245,7 @@ public class EtudiantPanel extends JPanel {
     private JButton styledButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text);
         btn.setBackground(bg); btn.setForeground(fg);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFont(new Font("Dialog", Font.BOLD, 13));
         btn.setFocusPainted(false); btn.setBorderPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorder(new EmptyBorder(8, 16, 8, 16));
@@ -272,7 +278,7 @@ public class EtudiantPanel extends JPanel {
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Segoe UI", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
         }
     }
 
@@ -290,7 +296,7 @@ public class EtudiantPanel extends JPanel {
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Segoe UI", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
         }
         public Component getTableCellEditorComponent(JTable t, Object v, boolean sel, int row, int col) {
             currentRow = row; return container;

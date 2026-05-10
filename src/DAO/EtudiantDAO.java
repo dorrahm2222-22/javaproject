@@ -113,6 +113,7 @@ public class EtudiantDAO {
     }
 
  
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean modifier(Etudiant etudiant) throws SQLException {
         connection.setAutoCommit(false);
         try {

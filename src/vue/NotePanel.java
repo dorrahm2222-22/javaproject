@@ -52,12 +52,12 @@ public class NotePanel extends JPanel {
 
         boolean canEdit = !currentUser.getRole().equalsIgnoreCase("etudiant");
         if (canEdit) {
-            JButton btnAdd = styledButton("+ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
+            JButton btnAdd = styledButton("➕ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
             btnAdd.addActionListener(e -> showForm(null));
             bar.add(btnAdd);
         }
 
-        JButton btnRefresh = styledButton("↻ Actualiser", PANEL_COLOR, TEXT_COLOR);
+        JButton btnRefresh = styledButton("🔄 Actualiser", PANEL_COLOR, TEXT_COLOR);
         btnRefresh.addActionListener(e -> loadData());
         bar.add(btnRefresh);
         return bar;
@@ -172,7 +172,7 @@ public class NotePanel extends JPanel {
         JButton btnDate = new JButton("📅  " + sdf.format(selectedDate[0]));
         btnDate.setBackground(FIELD_BG);
         btnDate.setForeground(TEXT_COLOR);
-        btnDate.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        btnDate.setFont(new Font("Dialog", Font.PLAIN, 13));
         btnDate.setBorderPainted(true);
         btnDate.setFocusPainted(false);
         btnDate.setBorder(BorderFactory.createCompoundBorder(
@@ -188,11 +188,16 @@ public class NotePanel extends JPanel {
             }
         });
 
-        form.add(formLabel("ID Étudiant"));       form.add(fIdEt);
-        form.add(formLabel("ID Matière"));        form.add(fIdMat);
-        form.add(formLabel("Note (0-20)"));       form.add(fNote);
-        form.add(formLabel("Type d'évaluation")); form.add(typePanel);
-        form.add(formLabel("Date d'évaluation")); form.add(btnDate);
+        form.add(formLabel("ID Étudiant"));       
+        form.add(fIdEt);
+        form.add(formLabel("ID Matière"));        
+        form.add(fIdMat);
+        form.add(formLabel("Note (0-20)"));       
+        form.add(fNote);
+        form.add(formLabel("Type d'évaluation")); 
+        form.add(typePanel);
+        form.add(formLabel("Date d'évaluation")); 
+        form.add(btnDate);
 
         JButton btnSave   = styledButton(existing == null ? "Ajouter" : "Modifier", ACCENT_COLOR, new Color(15, 23, 42));
         JButton btnCancel = styledButton("Annuler", FIELD_BG, TEXT_COLOR);
@@ -314,7 +319,7 @@ public class NotePanel extends JPanel {
                     && month[0] == today.get(Calendar.MONTH)
                     && year[0] == today.get(Calendar.YEAR));
                 JButton btn = new JButton(String.valueOf(day));
-                btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                btn.setFont(new Font("Dialog", Font.PLAIN, 12));
                 btn.setFocusPainted(false);
                 btn.setBorderPainted(false);
                 btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -354,7 +359,7 @@ public class NotePanel extends JPanel {
         JButton b = new JButton(txt);
         b.setBackground(new Color(22, 33, 55));
         b.setForeground(ACCENT_COLOR);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        b.setFont(new Font("Dialog", Font.BOLD, 16));
         b.setBorderPainted(false); b.setFocusPainted(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
@@ -376,6 +381,7 @@ public class NotePanel extends JPanel {
         }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public void deleteRow(int row) {
         int id = (int) tableModel.getValueAt(row, 0);
         int etudiantId = (int) tableModel.getValueAt(row, 1); 
@@ -413,7 +419,7 @@ public class NotePanel extends JPanel {
 
     private JButton styledButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text); btn.setBackground(bg); btn.setForeground(fg);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFont(new Font("Dialog", Font.BOLD, 13));
         btn.setFocusPainted(false); btn.setBorderPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR)); btn.setBorder(new EmptyBorder(8, 16, 8, 16));
         return btn;
@@ -446,11 +452,12 @@ public class NotePanel extends JPanel {
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Segoe UI", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
         }
     }
 
     class ActionEditor extends DefaultCellEditor {
+        @SuppressWarnings("FieldMayBeFinal")
         private JPanel container;
         private int currentRow;
 
@@ -468,7 +475,7 @@ public class NotePanel extends JPanel {
 
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Segoe UI", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
         }
 
         @SuppressWarnings("override")

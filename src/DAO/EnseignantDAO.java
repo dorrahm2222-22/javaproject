@@ -157,6 +157,7 @@ public class EnseignantDAO {
     }
 
    
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean modifier(Enseignant enseignant) throws SQLException {
         connection.setAutoCommit(false);
         try {

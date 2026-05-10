@@ -29,7 +29,7 @@ public class ProfilPanel extends JPanel {
 
         // Avatar
         JLabel avatar = new JLabel("👤", SwingConstants.CENTER);
-        avatar.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 56));
+        avatar.setFont(new Font("Dialog", Font.PLAIN, 56));
         avatar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Name
@@ -82,11 +82,11 @@ public class ProfilPanel extends JPanel {
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
 
         JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lbl.setFont(new Font("Dialog", Font.BOLD, 13));
         lbl.setForeground(SUBTLE_COLOR);
 
         JLabel val = new JLabel(value);
-        val.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        val.setFont(new Font("Dialog", Font.PLAIN, 13));
         val.setForeground(TEXT_COLOR);
 
         row.add(lbl, BorderLayout.WEST);
