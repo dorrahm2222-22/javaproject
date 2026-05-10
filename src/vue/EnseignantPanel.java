@@ -1,6 +1,7 @@
 package vue;
 
 import DAO.EnseignantDAO;
+import DAO.MatiereDAO;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
@@ -9,6 +10,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import modele.Enseignant;
+import modele.Matiere;
 import modele.Utilisateur;
 import util.DBConnection;
 
@@ -16,6 +18,7 @@ public class EnseignantPanel extends JPanel {
 
     public Utilisateur currentUser;
     private EnseignantDAO enseignantDAO;
+    private MatiereDAO matiereDAO;
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField txtSearch;
@@ -32,6 +35,7 @@ public class EnseignantPanel extends JPanel {
         this.currentUser = user;
         try {
             enseignantDAO = new EnseignantDAO(DBConnection.getConnection());
+            matiereDAO    = new MatiereDAO(DBConnection.getConnection());
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Erreur DB: " + e.getMessage());
         }
@@ -41,6 +45,16 @@ public class EnseignantPanel extends JPanel {
         add(buildToolbar(), BorderLayout.NORTH);
         add(buildTable(), BorderLayout.CENTER);
         loadData();
+    }
+
+    private boolean isAdmin() {
+        return currentUser.getRole().equalsIgnoreCase("admin");
+    }
+
+    private String getMatiereName(int id) {
+        if (id <= 0) return "-";
+        Matiere m = matiereDAO.getMatiereById(id);
+        return m != null ? m.getNom() : String.valueOf(id);
     }
 
     private JPanel buildToolbar() {
@@ -60,32 +74,49 @@ public class EnseignantPanel extends JPanel {
             public void keyReleased(KeyEvent e) { filterTable(txtSearch.getText()); }
         });
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        buttons.setBackground(BG_COLOR);
-
-        JButton btnAdd = styledButton("➕ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
-        btnAdd.addActionListener(e -> showForm(null));
-        buttons.add(btnAdd);
-
-        JButton btnRefresh = styledButton("🔄 Actualiser", PANEL_COLOR, TEXT_COLOR);
-        btnRefresh.addActionListener(e -> loadData());
-        buttons.add(btnRefresh);
-
         bar.add(txtSearch, BorderLayout.CENTER);
-        bar.add(buttons, BorderLayout.EAST);
+
+        if (isAdmin()) {
+            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            buttons.setBackground(BG_COLOR);
+
+            JButton btnAdd = styledButton("➕ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
+            btnAdd.addActionListener(e -> showForm(null));
+            buttons.add(btnAdd);
+
+            JButton btnRefresh = styledButton("🔄 Actualiser", PANEL_COLOR, TEXT_COLOR);
+            btnRefresh.addActionListener(e -> loadData());
+            buttons.add(btnRefresh);
+
+            bar.add(buttons, BorderLayout.EAST);
+        }
+
         return bar;
     }
 
     private JScrollPane buildTable() {
-        String[] cols = {"ID","Login", "motdepasse", "Nom", "Prénom", "Email", "Téléphone", "Matière ID", "actif", "Actions"};
+        String[] cols;
+        if (isAdmin()) {
+            cols = new String[]{"ID", "Login", "motdepasse", "Nom", "Prénom", "Email", "Téléphone", "Matière", "actif", "Actions"};
+        } else {
+            cols = new String[]{"Nom", "Prénom", "Email", "Téléphone"};
+        }
+
         tableModel = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return c == 9; }
+            public boolean isCellEditable(int r, int c) {
+                return isAdmin() && c == 9;
+            }
         };
+
         table = new JTable(tableModel);
         styleTable(table);
-        table.getColumn("Actions").setCellRenderer(new ActionRenderer());
-        table.getColumn("Actions").setCellEditor(new ActionEditor(new JCheckBox()));
-        table.getColumn("Actions").setMinWidth(120);
+
+        if (isAdmin()) {
+            table.getColumn("Actions").setCellRenderer(new ActionRenderer());
+            table.getColumn("Actions").setCellEditor(new ActionEditor(new JCheckBox()));
+            table.getColumn("Actions").setMinWidth(120);
+        }
+
         JScrollPane scroll = new JScrollPane(table);
         scroll.getViewport().setBackground(PANEL_COLOR);
         scroll.setBorder(BorderFactory.createLineBorder(new Color(44, 62, 90)));
@@ -96,11 +127,16 @@ public class EnseignantPanel extends JPanel {
         tableModel.setRowCount(0);
         List<Enseignant> list = enseignantDAO.listerTous();
         for (Enseignant e : list) {
-            // removed e.getGrade()
-            tableModel.addRow(new Object[]{
-                e.getId(), e.getLogin(), e.getMotDePasse(), e.getNom(), e.getPrenom(), e.getEmail(),
-                e.getTelephone(), e.getMatiereId(), e.isActif(), "actions"
-            });
+            if (isAdmin()) {
+                tableModel.addRow(new Object[]{
+                    e.getId(), e.getLogin(), "********", e.getNom(), e.getPrenom(),
+                    e.getEmail(), e.getTelephone(), getMatiereName(e.getMatiereId()), e.isActif(), "actions"
+                });
+            } else {
+                tableModel.addRow(new Object[]{
+                    e.getNom(), e.getPrenom(), e.getEmail(), e.getTelephone()
+                });
+            }
         }
     }
 
@@ -110,11 +146,16 @@ public class EnseignantPanel extends JPanel {
         for (Enseignant e : list) {
             if (e.getNom().toLowerCase().contains(query.toLowerCase()) ||
                 e.getPrenom().toLowerCase().contains(query.toLowerCase())) {
-                // removed e.getGrade()
-                tableModel.addRow(new Object[]{
-                    e.getId(), e.getLogin(), e.getMotDePasse(), e.getNom(), e.getPrenom(), e.getEmail(),
-                    e.getTelephone(), e.getMatiereId(), e.isActif(), "actions"
-                });
+                if (isAdmin()) {
+                    tableModel.addRow(new Object[]{
+                        e.getId(), e.getLogin(), "********", e.getNom(), e.getPrenom(),
+                        e.getEmail(), e.getTelephone(), getMatiereName(e.getMatiereId()), e.isActif(), "actions"
+                    });
+                } else {
+                    tableModel.addRow(new Object[]{
+                        e.getNom(), e.getPrenom(), e.getEmail(), e.getTelephone()
+                    });
+                }
             }
         }
     }
@@ -166,11 +207,8 @@ public class EnseignantPanel extends JPanel {
             }
             en.setMotDePasse(new String(fPwd.getPassword()));
             try {
-                if (existing == null) {
-                    enseignantDAO.ajouter(en);
-                } else {
-                    enseignantDAO.modifier(en);
-                }
+                if (existing == null) enseignantDAO.ajouter(en);
+                else enseignantDAO.modifier(en);
                 loadData();
                 dialog.dispose();
             } catch (SQLException e1) {
@@ -205,34 +243,47 @@ public class EnseignantPanel extends JPanel {
     }
 
     private void styleTable(JTable t) {
-        t.setBackground(PANEL_COLOR); t.setForeground(TEXT_COLOR);
-        t.setFont(new Font("Segoe UI", Font.PLAIN, 13)); t.setRowHeight(38);
+        t.setBackground(PANEL_COLOR);
+        t.setForeground(TEXT_COLOR);
+        t.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        t.setRowHeight(38);
         t.setGridColor(new Color(44, 62, 90));
-        t.setSelectionBackground(new Color(30, 58, 90)); t.setSelectionForeground(TEXT_COLOR);
+        t.setSelectionBackground(new Color(30, 58, 90));
+        t.setSelectionForeground(TEXT_COLOR);
         t.getTableHeader().setBackground(new Color(22, 33, 55));
         t.getTableHeader().setForeground(ACCENT_COLOR);
         t.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        t.setShowHorizontalLines(true); t.setIntercellSpacing(new Dimension(0, 1));
-        t.getColumnModel().getColumn(0).setMaxWidth(50);
+        t.setShowHorizontalLines(true);
+        t.setIntercellSpacing(new Dimension(0, 1));
+        if (isAdmin()) t.getColumnModel().getColumn(0).setMaxWidth(50);
     }
 
     private JButton styledButton(String text, Color bg, Color fg) {
-        JButton btn = new JButton(text); btn.setBackground(bg); btn.setForeground(fg);
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(fg);
         btn.setFont(new Font("Dialog", Font.BOLD, 13));
-        btn.setFocusPainted(false); btn.setBorderPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR)); btn.setBorder(new EmptyBorder(8, 16, 8, 16));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(new EmptyBorder(8, 16, 8, 16));
         return btn;
     }
 
     private JTextField formField(String val) {
-        JTextField f = new JTextField(val); styleField(f); return f;
+        JTextField f = new JTextField(val);
+        styleField(f);
+        return f;
     }
 
     private void styleField(JTextField f) {
-        f.setBackground(FIELD_BG); f.setForeground(TEXT_COLOR); f.setCaretColor(TEXT_COLOR);
+        f.setBackground(FIELD_BG);
+        f.setForeground(TEXT_COLOR);
+        f.setCaretColor(TEXT_COLOR);
         f.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         f.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(71, 85, 105)), new EmptyBorder(6, 10, 6, 10)));
+            BorderFactory.createLineBorder(new Color(71, 85, 105)),
+            new EmptyBorder(6, 10, 6, 10)));
     }
 
     private JLabel formLabel(String text) {
@@ -255,9 +306,12 @@ public class EnseignantPanel extends JPanel {
             return this;
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
-            JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
+            JButton b = new JButton(txt);
+            b.setBackground(bg);
+            b.setForeground(fg);
             b.setFont(new Font("Dialog", Font.PLAIN, 13));
-            b.setBorderPainted(false); b.setFocusPainted(false);
+            b.setBorderPainted(false);
+            b.setFocusPainted(false);
             return b;
         }
     }
@@ -282,9 +336,12 @@ public class EnseignantPanel extends JPanel {
         }
 
         private JButton makeBtn(String txt, Color bg, Color fg) {
-            JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
+            JButton b = new JButton(txt);
+            b.setBackground(bg);
+            b.setForeground(fg);
             b.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-            b.setBorderPainted(false); b.setFocusPainted(false);
+            b.setBorderPainted(false);
+            b.setFocusPainted(false);
             return b;
         }
 

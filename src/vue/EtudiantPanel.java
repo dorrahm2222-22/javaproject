@@ -43,6 +43,10 @@ public class EtudiantPanel extends JPanel {
         loadData();
     }
 
+    private boolean isAdmin() {
+        return currentUser.getRole().equalsIgnoreCase("admin");
+    }
+
     private JPanel buildToolbar() {
         JPanel bar = new JPanel(new BorderLayout(12, 0));
         bar.setBackground(BG_COLOR);
@@ -60,35 +64,51 @@ public class EtudiantPanel extends JPanel {
             public void keyReleased(KeyEvent e) { filterTable(txtSearch.getText()); }
         });
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        buttons.setBackground(BG_COLOR);
-
-        JButton btnAdd = styledButton("➕ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
-        btnAdd.addActionListener(e -> showForm(null));
-        buttons.add(btnAdd);
-
-        JButton btnRefresh = styledButton("🔄 Actualiser", PANEL_COLOR, TEXT_COLOR);
-        btnRefresh.addActionListener(e -> loadData());
-        buttons.add(btnRefresh);
-
         bar.add(txtSearch, BorderLayout.CENTER);
-        bar.add(buttons, BorderLayout.EAST);
+
+        // Only admin sees Add / Refresh buttons
+        if (isAdmin()) {
+            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            buttons.setBackground(BG_COLOR);
+
+            JButton btnAdd = styledButton("➕ Ajouter", ACCENT_COLOR, new Color(15, 23, 42));
+            btnAdd.addActionListener(e -> showForm(null));
+            buttons.add(btnAdd);
+
+            JButton btnRefresh = styledButton("🔄 Actualiser", PANEL_COLOR, TEXT_COLOR);
+            btnRefresh.addActionListener(e -> loadData());
+            buttons.add(btnRefresh);
+
+            bar.add(buttons, BorderLayout.EAST);
+        }
+
         return bar;
     }
 
     private JScrollPane buildTable() {
-        // Removed "Role" from columns
-        String[] cols = {"ID", "Nom", "Prénom", "Date Naissance", "Niveau", "Login", "Mot de passe", "Actif", "Email", "Actions"};
+        String[] cols;
+        if (isAdmin()) {
+            // Admin sees everything
+            cols = new String[]{"ID", "Nom", "Prénom", "Date Naissance", "Niveau", "Login", "Mot de passe", "Actif", "Email", "Actions"};
+        } else {
+            // Enseignant sees only non-sensitive info
+            cols = new String[]{"Nom", "Prénom", "Niveau", "Email"};
+        }
 
         tableModel = new DefaultTableModel(cols, 0) {
-            @Override
-            public boolean isCellEditable(int r, int c) { return c == 9; } // Actions is now index 9
+            public boolean isCellEditable(int r, int c) {
+                return isAdmin() && c == 9;
+            }
         };
+
         table = new JTable(tableModel);
         styleTable(table);
-        table.getColumn("Actions").setCellRenderer(new ActionRenderer());
-        table.getColumn("Actions").setCellEditor(new ActionEditor(new JCheckBox()));
-        table.getColumn("Actions").setMinWidth(120);
+
+        if (isAdmin()) {
+            table.getColumn("Actions").setCellRenderer(new ActionRenderer());
+            table.getColumn("Actions").setCellEditor(new ActionEditor(new JCheckBox()));
+            table.getColumn("Actions").setMinWidth(120);
+        }
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.getViewport().setBackground(PANEL_COLOR);
@@ -101,11 +121,18 @@ public class EtudiantPanel extends JPanel {
         try {
             List<Etudiant> list = etudiantDAO.getAllEtudiants();
             for (Etudiant e : list) {
-                tableModel.addRow(new Object[]{
-                    e.getId(), e.getNom(), e.getPrenom(), e.getDateNaissance(),
-                    e.getNiveau(), e.getLogin(), "********", 
-                    e.isActif() ? "Oui" : "Non", e.getEmail(), "actions"
-                });
+                if (isAdmin()) {
+                    tableModel.addRow(new Object[]{
+                        e.getId(), e.getNom(), e.getPrenom(), e.getDateNaissance(),
+                        e.getNiveau(), e.getLogin(), "********",
+                        e.isActif() ? "Oui" : "Non", e.getEmail(), "actions"
+                    });
+                } else {
+                    // Enseignant: only Nom, Prénom, Niveau, Email
+                    tableModel.addRow(new Object[]{
+                        e.getNom(), e.getPrenom(), e.getNiveau(), e.getEmail()
+                    });
+                }
             }
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
@@ -119,16 +146,22 @@ public class EtudiantPanel extends JPanel {
             for (Etudiant e : list) {
                 boolean match = e.getNom().toLowerCase().contains(query.toLowerCase())
                     || e.getPrenom().toLowerCase().contains(query.toLowerCase())
-                    || e.getLogin().toLowerCase().contains(query.toLowerCase());
+                    || (isAdmin() && e.getLogin().toLowerCase().contains(query.toLowerCase()));
                 if (match) {
-                    tableModel.addRow(new Object[]{
-                        e.getId(), e.getNom(), e.getPrenom(), e.getDateNaissance(),
-                        e.getNiveau(), e.getLogin(), "********",
-                        e.isActif() ? "Oui" : "Non", e.getEmail(), "actions"
-                    });
+                    if (isAdmin()) {
+                        tableModel.addRow(new Object[]{
+                            e.getId(), e.getNom(), e.getPrenom(), e.getDateNaissance(),
+                            e.getNiveau(), e.getLogin(), "********",
+                            e.isActif() ? "Oui" : "Non", e.getEmail(), "actions"
+                        });
+                    } else {
+                        tableModel.addRow(new Object[]{
+                            e.getNom(), e.getPrenom(), e.getNiveau(), e.getEmail()
+                        });
+                    }
                 }
             }
-        } catch (SQLException ex) {  }
+        } catch (SQLException ex) { }
     }
 
     public void showForm(Etudiant existing) {
@@ -143,34 +176,30 @@ public class EtudiantPanel extends JPanel {
         form.setBackground(PANEL_COLOR);
         form.setBorder(new EmptyBorder(20, 24, 20, 24));
 
-        JTextField fLogin  = formField(existing != null ? existing.getLogin() : "");
-        JTextField fNom    = formField(existing != null ? existing.getNom() : "");
-        JTextField fPrenom = formField(existing != null ? existing.getPrenom() : "");
-        JTextField fEmail  = formField(existing != null ? existing.getEmail() : "");
-        JTextField fNiveau = formField(existing != null ? existing.getNiveau() : "");
+        JTextField fLogin   = formField(existing != null ? existing.getLogin() : "");
+        JTextField fNom     = formField(existing != null ? existing.getNom() : "");
+        JTextField fPrenom  = formField(existing != null ? existing.getPrenom() : "");
+        JTextField fEmail   = formField(existing != null ? existing.getEmail() : "");
+        JTextField fNiveau  = formField(existing != null ? existing.getNiveau() : "");
         JPasswordField fPwd = new JPasswordField(existing != null ? existing.getMotDePasse() : "");
-        JTextField fDateNaissance = formField(existing != null && existing.getDateNaissance() != null ? existing.getDateNaissance().toString() : "YYYY-MM-DD");
-        
+        JTextField fDateNaissance = formField(
+            existing != null && existing.getDateNaissance() != null
+                ? existing.getDateNaissance().toString() : "YYYY-MM-DD");
+
         JCheckBox fActif = new JCheckBox("Compte Actif", existing == null || existing.isActif());
         fActif.setBackground(PANEL_COLOR);
         fActif.setForeground(TEXT_COLOR);
 
         styleField(fPwd);
 
-        form.add(formLabel("Login"));        
-        form.add(fLogin);
-        form.add(formLabel("Nom"));          
-        form.add(fNom);
-        form.add(formLabel("Prénom"));       
-        form.add(fPrenom);
-        form.add(formLabel("Email"));        
-        form.add(fEmail);
-        form.add(formLabel("Niveau"));       
-        form.add(fNiveau);
-        form.add(formLabel("Mot de passe")); 
-        form.add(fPwd);
+        form.add(formLabel("Login"));                          form.add(fLogin);
+        form.add(formLabel("Nom"));                            form.add(fNom);
+        form.add(formLabel("Prénom"));                         form.add(fPrenom);
+        form.add(formLabel("Email"));                          form.add(fEmail);
+        form.add(formLabel("Niveau"));                         form.add(fNiveau);
+        form.add(formLabel("Mot de passe"));                   form.add(fPwd);
         form.add(formLabel("Date de naissance (YYYY-MM-DD)")); form.add(fDateNaissance);
-        form.add(new JLabel(""));            form.add(fActif);
+        form.add(new JLabel(""));                              form.add(fActif);
 
         JButton btnSave   = styledButton(existing == null ? "Ajouter" : "Modifier", ACCENT_COLOR, new Color(15, 23, 42));
         JButton btnCancel = styledButton("Annuler", FIELD_BG, TEXT_COLOR);
@@ -186,13 +215,12 @@ public class EtudiantPanel extends JPanel {
                 et.setNiveau(fNiveau.getText().trim());
                 et.setMotDePasse(new String(fPwd.getPassword()));
                 et.setActif(fActif.isSelected());
-                
                 String dateStr = fDateNaissance.getText().trim();
-                et.setDateNaissance(dateStr.isEmpty() || dateStr.equals("YYYY-MM-DD") ? null : java.sql.Date.valueOf(dateStr));
-
+                et.setDateNaissance(
+                    dateStr.isEmpty() || dateStr.equals("YYYY-MM-DD")
+                        ? null : java.sql.Date.valueOf(dateStr));
                 if (existing == null) etudiantDAO.ajouter(et);
                 else etudiantDAO.modifier(et);
-                
                 loadData();
                 dialog.dispose();
             } catch (Exception ex) {
@@ -239,7 +267,8 @@ public class EtudiantPanel extends JPanel {
         t.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         t.setShowHorizontalLines(true);
         t.setIntercellSpacing(new Dimension(0, 1));
-        t.getColumnModel().getColumn(0).setMaxWidth(50);
+        // Only restrict ID column width for admin (col 0 = ID)
+        if (isAdmin()) t.getColumnModel().getColumn(0).setMaxWidth(50);
     }
 
     private JButton styledButton(String text, Color bg, Color fg) {
@@ -260,47 +289,65 @@ public class EtudiantPanel extends JPanel {
         f.setBackground(FIELD_BG); f.setForeground(TEXT_COLOR);
         f.setCaretColor(TEXT_COLOR); f.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         f.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(71, 85, 105)), new EmptyBorder(6, 10, 6, 10)));
+            BorderFactory.createLineBorder(new Color(71, 85, 105)),
+            new EmptyBorder(6, 10, 6, 10)));
     }
 
     private JLabel formLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setForeground(SUBTLE_COLOR); l.setFont(new Font("Segoe UI", Font.BOLD, 12)); return l;
+        l.setForeground(SUBTLE_COLOR);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        return l;
     }
 
     class ActionRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        ActionRenderer() { setLayout(new FlowLayout(FlowLayout.CENTER, 6, 4)); setBackground(PANEL_COLOR); }
-        public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+        ActionRenderer() {
+            setLayout(new FlowLayout(FlowLayout.CENTER, 6, 4));
+            setBackground(PANEL_COLOR);
+        }
+        public Component getTableCellRendererComponent(
+                JTable t, Object v, boolean sel, boolean foc, int r, int c) {
             removeAll();
-            add(makeBtn("✏", new Color(30,58,90), ACCENT_COLOR));
-            add(makeBtn("🗑", new Color(60,20,20), DANGER));
+            add(makeBtn("✏", new Color(30, 58, 90), ACCENT_COLOR));
+            add(makeBtn("🗑", new Color(60, 20, 20), DANGER));
             return this;
         }
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13));
+            b.setBorderPainted(false); b.setFocusPainted(false);
+            return b;
         }
     }
 
     class ActionEditor extends DefaultCellEditor {
-        private final JPanel container; private int currentRow;
+        private final JPanel container;
+        private int currentRow;
+
         ActionEditor(JCheckBox cb) {
             super(cb);
             container = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
             container.setBackground(PANEL_COLOR);
-            JButton btnEdit = makeBtn("✏", new Color(30,58,90), ACCENT_COLOR);
-            JButton btnDel  = makeBtn("🗑", new Color(60,20,20), DANGER);
+            JButton btnEdit = makeBtn("✏", new Color(30, 58, 90), ACCENT_COLOR);
+            JButton btnDel  = makeBtn("🗑", new Color(60, 20, 20), DANGER);
             btnEdit.addActionListener(e -> { fireEditingStopped(); editRow(currentRow); });
             btnDel.addActionListener(e  -> { fireEditingStopped(); deleteRow(currentRow); });
-            container.add(btnEdit); container.add(btnDel);
+            container.add(btnEdit);
+            container.add(btnDel);
         }
+
         private JButton makeBtn(String txt, Color bg, Color fg) {
             JButton b = new JButton(txt); b.setBackground(bg); b.setForeground(fg);
-            b.setFont(new Font("Dialog", Font.PLAIN, 13)); b.setBorderPainted(false); b.setFocusPainted(false); return b;
+            b.setFont(new Font("Dialog", Font.PLAIN, 13));
+            b.setBorderPainted(false); b.setFocusPainted(false);
+            return b;
         }
-        public Component getTableCellEditorComponent(JTable t, Object v, boolean sel, int row, int col) {
+
+        public Component getTableCellEditorComponent(
+                JTable t, Object v, boolean sel, int row, int col) {
             currentRow = row; return container;
         }
+
         public Object getCellEditorValue() { return ""; }
     }
 }

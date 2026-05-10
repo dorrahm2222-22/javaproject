@@ -51,19 +51,17 @@ public class MainFrame extends JFrame {
         header.setAlignmentX(Component.LEFT_ALIGNMENT);
         header.setMaximumSize(new Dimension(220, 120));
 
-        // Logo 
         JLabel logo = new JLabel("🎓");
         logo.setFont(new Font("Dialog", Font.PLAIN, 30));
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // App name
         JLabel appName = new JLabel("EcoleManager");
         appName.setFont(new Font("Georgia", Font.BOLD, 16));
         appName.setForeground(ACCENT_COLOR);
         appName.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Role and login
-        String roleDisplay = currentUser.getRole().substring(0, 1).toUpperCase()+ currentUser.getRole().substring(1).toLowerCase();
+        String roleDisplay = currentUser.getRole().substring(0, 1).toUpperCase()
+                + currentUser.getRole().substring(1).toLowerCase();
         JLabel roleLabel = new JLabel(roleDisplay + " • " + currentUser.getLogin());
         roleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         roleLabel.setForeground(SUBTLE_COLOR);
@@ -76,15 +74,14 @@ public class MainFrame extends JFrame {
         header.add(roleLabel);
 
         sidebar.add(header);
-
         sidebar.add(buildDivider());
         sidebar.add(Box.createVerticalStrut(10));
 
-        // Nav items based on role
         String role = currentUser.getRole().toLowerCase();
 
         switch (role) {
             case "admin":
+                // Partie admin : gérer étudiants, enseignants, affecter matières & étudiants
                 sidebar.add(buildNavItem("👥", "Étudiants", "etudiants"));
                 sidebar.add(buildNavItem("👨‍🏫", "Enseignants", "enseignants"));
                 sidebar.add(buildNavItem("📚", "Matières", "matieres"));
@@ -92,21 +89,22 @@ public class MainFrame extends JFrame {
                 sidebar.add(buildNavItem("📊", "Moyennes", "moyennes"));
                 break;
             case "enseignant":
-                sidebar.add(buildNavItem("📚", "Ma Matière", "matieres"));
+                // Partie Enseignant : liste étudiants, liste matières, gestion notes
+                sidebar.add(buildNavItem("👥", "Étudiants", "etudiants"));
+                sidebar.add(buildNavItem("📚", "Matières", "matieres"));
                 sidebar.add(buildNavItem("📝", "Notes", "notes"));
-                sidebar.add(buildNavItem("📊", "Moyennes", "moyennes"));
                 break;
-            default:
-                sidebar.add(buildNavItem("👤", "Mon Profil", "profil"));
+            default: // etudiant
+                // Partie Étudiant : liste matières, liste enseignants, notes par matière
+                sidebar.add(buildNavItem("📚", "Matières", "matieres"));
+                sidebar.add(buildNavItem("👨‍🏫", "Enseignants", "enseignants"));
                 sidebar.add(buildNavItem("📝", "Mes Notes", "notes"));
-                sidebar.add(buildNavItem("📊", "Ma Moyenne", "moyennes"));
                 break;
         }
 
         sidebar.add(Box.createVerticalGlue());
         sidebar.add(buildDivider());
 
-        // Logout button
         JButton btnLogout = new JButton("⬅  Se déconnecter");
         btnLogout.setBackground(SIDEBAR_COLOR);
         btnLogout.setForeground(ERROR_COLOR());
@@ -170,12 +168,10 @@ public class MainFrame extends JFrame {
         return btn;
     }
 
-
     private JPanel buildContent() {
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(BG_COLOR);
 
-       
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(BG_COLOR);
         topBar.setBorder(new EmptyBorder(20, 28, 16, 28));
@@ -184,7 +180,6 @@ public class MainFrame extends JFrame {
         lblPageTitle.setFont(new Font("Georgia", Font.BOLD, 22));
         lblPageTitle.setForeground(TEXT_COLOR);
         topBar.add(lblPageTitle, BorderLayout.WEST);
-
 
         JLabel badge = new JLabel(currentUser.getLogin() + "  👤");
         badge.setFont(new Font("Dialog", Font.PLAIN, 13));
@@ -197,23 +192,26 @@ public class MainFrame extends JFrame {
         contentPanel = new JPanel(cardLayout);
         contentPanel.setBackground(BG_COLOR);
 
-        
         String role = currentUser.getRole().toLowerCase();
 
         if (role.equals("admin")) {
+            // admin: full management — gérer étudiants, enseignants,
+            //            affecter matières aux enseignants, affecter étudiants aux matières
             contentPanel.add(new EtudiantPanel(currentUser), "etudiants");
             contentPanel.add(new EnseignantPanel(currentUser), "enseignants");
             contentPanel.add(new MatierePanel(currentUser), "matieres");
             contentPanel.add(new NotePanel(currentUser), "notes");
             contentPanel.add(new MoyennePanel(currentUser), "moyennes");
         } else if (role.equals("enseignant")) {
+            // Enseignant: read-only students & subjects, manage notes
+            contentPanel.add(new EtudiantPanel(currentUser), "etudiants");
             contentPanel.add(new MatierePanel(currentUser), "matieres");
             contentPanel.add(new NotePanel(currentUser), "notes");
-            contentPanel.add(new MoyennePanel(currentUser), "moyennes");
         } else {
-            contentPanel.add(new ProfilPanel(currentUser), "profil");
+            // Étudiant: read-only subjects & teachers, view own notes
+            contentPanel.add(new MatierePanel(currentUser), "matieres");
+            contentPanel.add(new EnseignantPanel(currentUser), "enseignants");
             contentPanel.add(new NotePanel(currentUser), "notes");
-            contentPanel.add(new MoyennePanel(currentUser), "moyennes");
         }
 
         wrapper.add(contentPanel, BorderLayout.CENTER);
@@ -226,11 +224,11 @@ public class MainFrame extends JFrame {
             cardLayout.show(contentPanel, "etudiants");
             lblPageTitle.setText("Étudiants");
         } else if (role.equals("enseignant")) {
-            cardLayout.show(contentPanel, "matieres");
-            lblPageTitle.setText("Ma Matière");
+            cardLayout.show(contentPanel, "etudiants");
+            lblPageTitle.setText("Étudiants");
         } else {
-            cardLayout.show(contentPanel, "profil");
-            lblPageTitle.setText("Mon Profil");
+            cardLayout.show(contentPanel, "matieres");
+            lblPageTitle.setText("Matières");
         }
     }
 }
