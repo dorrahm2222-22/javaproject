@@ -183,8 +183,9 @@ public class EtudiantPanel extends JPanel {
         JTextField fNiveau  = formField(existing != null ? existing.getNiveau() : "");
         JPasswordField fPwd = new JPasswordField(existing != null ? existing.getMotDePasse() : "");
         JTextField fDateNaissance = formField(
-            existing != null && existing.getDateNaissance() != null
-                ? existing.getDateNaissance().toString() : "YYYY-MM-DD");
+        existing != null && existing.getDateNaissance() != null
+        ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(existing.getDateNaissance()) 
+        : "YYYY-MM-DD");
 
         JCheckBox fActif = new JCheckBox("Compte Actif", existing == null || existing.isActif());
         fActif.setBackground(PANEL_COLOR);
@@ -343,11 +344,13 @@ public class EtudiantPanel extends JPanel {
             return b;
         }
 
+        @Override
         public Component getTableCellEditorComponent(
                 JTable t, Object v, boolean sel, int row, int col) {
             currentRow = row; return container;
         }
 
+        @Override
         public Object getCellEditorValue() { return ""; }
     }
 }
