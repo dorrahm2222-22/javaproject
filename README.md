@@ -85,7 +85,7 @@ source src/sql/trigger.sql
 Open src/util/DBConnection.java and update the credentials to match your MySQL setup:
 javaString url = "jdbc:mysql://localhost:3306/systemedegestiondelecole";
 String user = "root";
-String password = "123456789";
+String password = "";
 4. Add the JDBC driver to your classpath
 Make sure lib/mysql-connector-j-9.5.0.jar is included in your project's build path. In VS Code, this is handled via .vscode/settings.json.
 5. Run the application
